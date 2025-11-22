@@ -1,24 +1,18 @@
 package com.software.dev.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.software.dev.domain.QuartzEntity;
 import com.software.dev.domain.Result;
-import com.software.dev.domain.UrlRequest;
-import com.software.dev.job.UrlJob;
 import com.software.dev.mapper.QuartzEntityMapper;
 import com.software.dev.mapper.UrlRequestMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-import java.util.Map;
 /**
  * Job Controller
  * Quartz原生的任务控制器
@@ -78,7 +72,7 @@ public class JobController {
         return Result.ok(list);
     }
     @PostMapping("/trigger")
-    public  Result trigger(QuartzEntity quartz,HttpServletResponse response) {
+    public  Result trigger(QuartzEntity quartz, HttpServletResponse response) {
         log.info("触发任务");
         try {
             JobKey key = new JobKey(quartz.getJobName(),quartz.getJobGroup());

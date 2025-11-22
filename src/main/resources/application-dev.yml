@@ -1,16 +1,19 @@
 server:
-  port: 6969
+  port: 17777
   servlet:
-    context-path: /quartz
+    context-path: /scheduler
     encoding:
       force: true
       charset: UTF-8
-tomcat:
-    remote-ip-header: x-forward-for
-    uri-encoding: UTF-8
-    max-threads: 10
-    background-processor-delay: 30
-    basedir: ${user.home}/tomcat/
+  jetty:
+    threadpool:
+      min-threads: 8
+      max-threads: 200
+      idle-timeout: 60000
+    connection-idle-timeout: 30000
+    stop-timeout: 30000
+    max-http-form-post-size: 200000
+    max-http-header-size: 8192
 #mybatis-plus配置控制台打印完整带参数SQL语句
 mybatis-plus:
   configuration:
@@ -19,7 +22,7 @@ spring:
     banner:
       charset: UTF-8
     application:
-        name: spring-boot-EasyUrlTask
+        name: quartz-api-scheduler
     freemarker:
         request-context-attribute: request
         suffix: .html
@@ -38,44 +41,47 @@ spring:
 #    mvc:
 #      static-path-pattern: /statics/**
     datasource:
-      type: com.alibaba.druid.pool.DruidDataSource
-      driverClassName: com.mysql.cj.jdbc.Driver
-      platform: mysql
-      url: jdbc:mysql://127.0.0.1:3306/quartz?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+      type: com.zaxxer.hikari.HikariDataSource
+      driver-class-name: org.postgresql.Driver
       username: root
-      password: root123
-      initialSize: 1
-      minIdle: 2
-      maxActive: 2
-      maxWait: 60000
-      timeBetweenEvictionRunsMillis: 60000
-      minEvictableIdleTimeMillis: 300000
-      validationQuery: SELECT 1
-      testWhileIdle: true
-      testOnBorrow: false
-      testOnReturn: false
-      filters: stat,wall,log4j
-      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
-      connectionProperties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
-      # 配置DruidStatFilter
-      web-stat-filter:
-        enabled: true
-        url-pattern: "/*"
-        exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*,/system/druid/*"
+      password: bfXa4Pt2lUUScy8jakXf
+      # hikari连接池配置
+      hikari:
+        #连接池名
+        pool-name: HikariCP
+        #最小空闲连接数
+        minimum-idle: 5
+        # 空闲连接存活最大时间，默认10分钟
+        idle-timeout: 600000
+        # 连接池最大连接数，默认是10
+        maximum-pool-size: 10
+        # 此属性控制从池返回的连接的默认自动提交行为,默认值：true
+        auto-commit: true
+        # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认30分钟
+        max-lifetime: 1800000
+        # 数据库连接超时时间,默认30秒
+        connection-timeout: 30000
+        # 连接测试query
+        connection-test-query: SELECT 1
     quartz:
       job-store-type: jdbc
-      jobStore:
-        class: org.quartz.impl.jdbcjobstore.JobStoreTX
-        clusterCheckinInterval: 10000
-        driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
-        isClustered: true
-        tablePrefix: QRTZ_
-        useProperties: false
-      scheduler:
-        instanceId: AUTO
-        instanceName: clusteredScheduler
-      threadPool:
-        class: org.quartz.simpl.SimpleThreadPool
-        threadCount: 10
-        threadPriority: 5
-        threadsInheritContextClassLoaderOfInitializingThread: true
+      jdbc:
+        initialize-schema: always
+      properties:
+        org:
+          quartz:
+            jobStore:
+              class: org.quartz.impl.jdbcjobstore.JobStoreTX
+              clusterCheckinInterval: 10000
+              driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+              isClustered: true
+              tablePrefix: QRTZ_
+              useProperties: false
+            scheduler:
+              instanceId: AUTO
+              instanceName: clusteredScheduler
+            threadPool:
+              class: org.quartz.simpl.SimpleThreadPool
+              threadCount: 10
+              threadPriority: 5
+              threadsInheritContextClassLoaderOfInitializingThread: true

@@ -1,0 +1,437 @@
+/*
+ Navicat Premium Data Transfer
+
+ Source Server         : localhost
+ Source Server Type    : PostgreSQL
+ Source Server Version : 130004
+ Source Host           : localhost:5432
+ Source Schema         : quartz
+
+ Target Server Type    : PostgreSQL
+ Target Server Version : 130004
+ File Encoding         : 65001
+
+ Date: 26/11/2022 14:57:47
+*/
+
+-- ----------------------------
+-- Table structure for qrtz_blob_triggers
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_blob_triggers;
+CREATE TABLE qrtz_blob_triggers  (
+  SCHED_NAME varchar(120) NOT NULL,
+  TRIGGER_NAME varchar(200) NOT NULL,
+  TRIGGER_GROUP varchar(200) NOT NULL,
+  BLOB_DATA bytea NULL,
+  PRIMARY KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_calendars
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_calendars;
+CREATE TABLE qrtz_calendars  (
+  SCHED_NAME varchar(120) NOT NULL,
+  CALENDAR_NAME varchar(200) NOT NULL,
+  CALENDAR bytea NOT NULL,
+  PRIMARY KEY (SCHED_NAME, CALENDAR_NAME)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_cron_triggers
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_cron_triggers;
+CREATE TABLE qrtz_cron_triggers  (
+  SCHED_NAME varchar(120) NOT NULL,
+  TRIGGER_NAME varchar(200) NOT NULL,
+  TRIGGER_GROUP varchar(200) NOT NULL,
+  CRON_EXPRESSION varchar(120) NOT NULL,
+  TIME_ZONE_ID varchar(80) NULL DEFAULT NULL,
+  PRIMARY KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_fired_triggers
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_fired_triggers;
+CREATE TABLE qrtz_fired_triggers  (
+  SCHED_NAME varchar(120) NOT NULL,
+  ENTRY_ID varchar(95) NOT NULL,
+  TRIGGER_NAME varchar(200) NOT NULL,
+  TRIGGER_GROUP varchar(200) NOT NULL,
+  INSTANCE_NAME varchar(200) NOT NULL,
+  FIRED_TIME bigint NOT NULL,
+  SCHED_TIME bigint NOT NULL,
+  PRIORITY int NOT NULL,
+  STATE varchar(16) NOT NULL,
+  JOB_NAME varchar(200) NULL DEFAULT NULL,
+  JOB_GROUP varchar(200) NULL DEFAULT NULL,
+  IS_NONCONCURRENT varchar(1) NULL DEFAULT NULL,
+  REQUESTS_RECOVERY varchar(1) NULL DEFAULT NULL,
+  PRIMARY KEY (SCHED_NAME, ENTRY_ID)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_job_details
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_job_details;
+CREATE TABLE qrtz_job_details  (
+  SCHED_NAME varchar(120) NOT NULL,
+  JOB_NAME varchar(200) NOT NULL,
+  JOB_GROUP varchar(200) NOT NULL,
+  DESCRIPTION varchar(250) NULL DEFAULT NULL,
+  JOB_CLASS_NAME varchar(250) NOT NULL,
+  IS_DURABLE varchar(1) NOT NULL,
+  IS_NONCONCURRENT varchar(1) NOT NULL,
+  IS_UPDATE_DATA varchar(1) NOT NULL,
+  REQUESTS_RECOVERY varchar(1) NOT NULL,
+  JOB_DATA bytea NULL,
+  PRIMARY KEY (SCHED_NAME, JOB_NAME, JOB_GROUP)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_locks
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_locks;
+CREATE TABLE qrtz_locks  (
+  SCHED_NAME varchar(120) NOT NULL,
+  LOCK_NAME varchar(40) NOT NULL,
+  PRIMARY KEY (SCHED_NAME, LOCK_NAME)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_paused_trigger_grps
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_paused_trigger_grps;
+CREATE TABLE qrtz_paused_trigger_grps  (
+  SCHED_NAME varchar(120) NOT NULL,
+  TRIGGER_GROUP varchar(200) NOT NULL,
+  PRIMARY KEY (SCHED_NAME, TRIGGER_GROUP)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_scheduler_state
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_scheduler_state;
+CREATE TABLE qrtz_scheduler_state  (
+  SCHED_NAME varchar(120) NOT NULL,
+  INSTANCE_NAME varchar(200) NOT NULL,
+  LAST_CHECKIN_TIME bigint NOT NULL,
+  CHECKIN_INTERVAL bigint NOT NULL,
+  PRIMARY KEY (SCHED_NAME, INSTANCE_NAME)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_simple_triggers
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_simple_triggers;
+CREATE TABLE qrtz_simple_triggers  (
+  SCHED_NAME varchar(120) NOT NULL,
+  TRIGGER_NAME varchar(200) NOT NULL,
+  TRIGGER_GROUP varchar(200) NOT NULL,
+  REPEAT_COUNT bigint NOT NULL,
+  REPEAT_INTERVAL bigint NOT NULL,
+  TIMES_TRIGGERED bigint NOT NULL,
+  PRIMARY KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_simprop_triggers
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_simprop_triggers;
+CREATE TABLE qrtz_simprop_triggers  (
+  SCHED_NAME varchar(120) NOT NULL,
+  TRIGGER_NAME varchar(200) NOT NULL,
+  TRIGGER_GROUP varchar(200) NOT NULL,
+  STR_PROP_1 varchar(512) NULL DEFAULT NULL,
+  STR_PROP_2 varchar(512) NULL DEFAULT NULL,
+  STR_PROP_3 varchar(512) NULL DEFAULT NULL,
+  INT_PROP_1 int NULL DEFAULT NULL,
+  INT_PROP_2 int NULL DEFAULT NULL,
+  LONG_PROP_1 bigint NULL DEFAULT NULL,
+  LONG_PROP_2 bigint NULL DEFAULT NULL,
+  DEC_PROP_1 numeric(13,4) NULL DEFAULT NULL,
+  DEC_PROP_2 numeric(13,4) NULL DEFAULT NULL,
+  BOOL_PROP_1 varchar(1) NULL DEFAULT NULL,
+  BOOL_PROP_2 varchar(1) NULL DEFAULT NULL,
+  PRIMARY KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+);
+
+-- ----------------------------
+-- Table structure for qrtz_triggers
+-- ----------------------------
+DROP TABLE IF EXISTS qrtz_triggers;
+CREATE TABLE qrtz_triggers  (
+  SCHED_NAME varchar(120) NOT NULL,
+  TRIGGER_NAME varchar(200) NOT NULL,
+  TRIGGER_GROUP varchar(200) NOT NULL,
+  JOB_NAME varchar(200) NOT NULL,
+  JOB_GROUP varchar(200) NOT NULL,
+  DESCRIPTION varchar(250) NULL DEFAULT NULL,
+  NEXT_FIRE_TIME bigint NULL DEFAULT NULL,
+  PREV_FIRE_TIME bigint NULL DEFAULT NULL,
+  PRIORITY int NULL DEFAULT NULL,
+  TRIGGER_STATE varchar(16) NOT NULL,
+  TRIGGER_TYPE varchar(8) NOT NULL,
+  START_TIME bigint NOT NULL,
+  END_TIME bigint NULL DEFAULT NULL,
+  CALENDAR_NAME varchar(200) NULL DEFAULT NULL,
+  MISFIRE_INSTR smallint NULL DEFAULT NULL,
+  JOB_DATA bytea NULL,
+  PRIMARY KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP)
+);
+
+-- ----------------------------
+-- Table structure for sys_token
+-- ----------------------------
+DROP TABLE IF EXISTS sys_token;
+CREATE TABLE sys_token  (
+  token_id serial NOT NULL,
+  token_value varchar(255) NULL DEFAULT NULL,
+  PRIMARY KEY (token_id)
+);
+
+-- ----------------------------
+-- Table structure for url_request
+-- ----------------------------
+DROP TABLE IF EXISTS url_request;
+CREATE TABLE url_request  (
+  request_id serial NOT NULL,
+  request_name varchar(255) NULL DEFAULT NULL,
+  request_method varchar(255) NULL DEFAULT NULL,
+  request_cron varchar(255) NULL DEFAULT NULL,
+  request_url varchar(255) NULL DEFAULT NULL,
+  status smallint NULL DEFAULT 0,
+  request_timeout int NULL DEFAULT NULL,
+  update_time timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (request_id)
+);
+
+-- ----------------------------
+-- Table structure for url_request_token
+-- ----------------------------
+DROP TABLE IF EXISTS url_request_token;
+CREATE TABLE url_request_token  (
+  request_id varchar(50) NOT NULL,
+  token_url varchar(255) NULL DEFAULT NULL,
+  method varchar(255) NULL DEFAULT 'POST',
+  param varchar(255) NULL DEFAULT NULL,
+  param_type varchar(50) NULL DEFAULT '1',
+  append_name varchar(255) NULL DEFAULT NULL,
+  append_type varchar(50) NULL DEFAULT '1',
+  status smallint NULL DEFAULT 1,
+  token_expression varchar(255) NULL DEFAULT NULL,
+  PRIMARY KEY (request_id)
+);
+
+-- ----------------------------
+-- Table structure for url_response
+-- ----------------------------
+DROP TABLE IF EXISTS url_response;
+CREATE TABLE url_response  (
+  response_id varchar(50) NOT NULL,
+  request_id varchar(50) NULL DEFAULT NULL,
+  response_time timestamp(3) NULL DEFAULT NULL,
+  response_text text NULL DEFAULT NULL,
+  status smallint NULL DEFAULT NULL,
+  request_time timestamp(3) NULL DEFAULT NULL,
+  assumption_result varchar(20) NULL DEFAULT NULL,
+  PRIMARY KEY (response_id)
+);
+
+-- ----------------------------
+-- Table structure for url_response_assumption
+-- ----------------------------
+DROP TABLE IF EXISTS url_response_assumption;
+CREATE TABLE url_response_assumption  (
+  request_id varchar(50) NOT NULL,
+  key_first varchar(100) NULL DEFAULT NULL,
+  value_first varchar(100) NULL DEFAULT NULL,
+  key_second varchar(100) NULL DEFAULT NULL,
+  value_second varchar(100) NULL DEFAULT NULL,
+  key_third varchar(100) NULL DEFAULT NULL,
+  value_third varchar(100) NULL DEFAULT NULL,
+  value_else varchar(100) NULL DEFAULT NULL,
+  status int NULL DEFAULT 1,
+  PRIMARY KEY (request_id)
+);
+
+-- ----------------------------
+-- Foreign Key Constraints
+-- ----------------------------
+ALTER TABLE qrtz_blob_triggers ADD CONSTRAINT qrtz_blob_triggers_ibfk_1 
+  FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) ON DELETE CASCADE;
+
+ALTER TABLE qrtz_cron_triggers ADD CONSTRAINT qrtz_cron_triggers_ibfk_1 
+  FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) ON DELETE CASCADE;
+
+ALTER TABLE qrtz_simple_triggers ADD CONSTRAINT qrtz_simple_triggers_ibfk_1 
+  FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) ON DELETE CASCADE;
+
+ALTER TABLE qrtz_simprop_triggers ADD CONSTRAINT qrtz_simprop_triggers_ibfk_1 
+  FOREIGN KEY (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) REFERENCES qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP) ON DELETE CASCADE;
+
+ALTER TABLE qrtz_triggers ADD CONSTRAINT qrtz_triggers_ibfk_1 
+  FOREIGN KEY (SCHED_NAME, JOB_NAME, JOB_GROUP) REFERENCES qrtz_job_details (SCHED_NAME, JOB_NAME, JOB_GROUP) ON DELETE CASCADE;
+
+-- ----------------------------
+-- Indexes
+-- ----------------------------
+CREATE INDEX idx_qrtz_ft_inst_job_req_rcvry ON qrtz_fired_triggers (SCHED_NAME, INSTANCE_NAME, REQUESTS_RECOVERY);
+CREATE INDEX idx_qrtz_ft_j_g ON qrtz_fired_triggers (SCHED_NAME, JOB_NAME, JOB_GROUP);
+CREATE INDEX idx_qrtz_ft_jg ON qrtz_fired_triggers (SCHED_NAME, JOB_GROUP);
+CREATE INDEX idx_qrtz_ft_t_g ON qrtz_fired_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP);
+CREATE INDEX idx_qrtz_ft_tg ON qrtz_fired_triggers (SCHED_NAME, TRIGGER_GROUP);
+CREATE INDEX idx_qrtz_ft_trig_inst_name ON qrtz_fired_triggers (SCHED_NAME, INSTANCE_NAME);
+CREATE INDEX idx_qrtz_j_grp ON qrtz_job_details (SCHED_NAME, JOB_GROUP);
+CREATE INDEX idx_qrtz_j_req_recovery ON qrtz_job_details (SCHED_NAME, REQUESTS_RECOVERY);
+CREATE INDEX idx_qrtz_t_c ON qrtz_triggers (SCHED_NAME, CALENDAR_NAME);
+CREATE INDEX idx_qrtz_t_g ON qrtz_triggers (SCHED_NAME, TRIGGER_GROUP);
+CREATE INDEX idx_qrtz_t_j ON qrtz_triggers (SCHED_NAME, JOB_NAME, JOB_GROUP);
+CREATE INDEX idx_qrtz_t_jg ON qrtz_triggers (SCHED_NAME, JOB_GROUP);
+CREATE INDEX idx_qrtz_t_n_g_state ON qrtz_triggers (SCHED_NAME, TRIGGER_GROUP, TRIGGER_STATE);
+CREATE INDEX idx_qrtz_t_n_state ON qrtz_triggers (SCHED_NAME, TRIGGER_NAME, TRIGGER_GROUP, TRIGGER_STATE);
+CREATE INDEX idx_qrtz_t_next_fire_time ON qrtz_triggers (SCHED_NAME, NEXT_FIRE_TIME);
+CREATE INDEX idx_qrtz_t_nft_misfire ON qrtz_triggers (SCHED_NAME, MISFIRE_INSTR, NEXT_FIRE_TIME);
+CREATE INDEX idx_qrtz_t_nft_st ON qrtz_triggers (SCHED_NAME, TRIGGER_STATE, NEXT_FIRE_TIME);
+CREATE INDEX idx_qrtz_t_nft_st_misfire ON qrtz_triggers (SCHED_NAME, MISFIRE_INSTR, NEXT_FIRE_TIME, TRIGGER_STATE);
+CREATE INDEX idx_qrtz_t_nft_st_misfire_grp ON qrtz_triggers (SCHED_NAME, MISFIRE_INSTR, NEXT_FIRE_TIME, TRIGGER_GROUP, TRIGGER_STATE);
+CREATE INDEX idx_qrtz_t_state ON qrtz_triggers (SCHED_NAME, TRIGGER_STATE);
+
+-- ----------------------------
+-- Records of qrtz_cron_triggers
+-- ----------------------------
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10003', 'DEFAULT', '0 0/30 * * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10004', 'DEFAULT', '0 0/30 * * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10005', 'DEFAULT', '0 0/30 * * * ?', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10006', 'DEFAULT', '0 0 0/6 * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10007', 'DEFAULT', '0 0 0/12 * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10009', 'DEFAULT', '0 0 0/3 * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10010', 'DEFAULT', '0 0 0/2 * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10011', 'DEFAULT', '0 0 0/7 * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10013', 'DEFAULT', '0 0 0/2 * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10014', 'DEFAULT', '0 0 0/6 * * ? *', 'Asia/Shanghai');
+INSERT INTO qrtz_cron_triggers VALUES ('quartzScheduler', '10015', 'DEFAULT', '0 0 0/6 * * ? *', 'Asia/Shanghai');
+
+-- ----------------------------
+-- Records of qrtz_job_details
+-- ----------------------------
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10003', 'DEFAULT', 'JKOrder平安好医生2.0', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303030337800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10004', 'DEFAULT', 'DEMO REQUEST', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303030347800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10005', 'DEFAULT', 'SYNC旧浙江', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303030357800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10006', 'DEFAULT', '中国政府采购', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303030367800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10007', 'DEFAULT', 'TFS - 测试任务', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303030377800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10009', 'DEFAULT', 'TFS - 抓取', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303030397800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10010', 'DEFAULT', 'TFS - 分析', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303031307800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10011', 'DEFAULT', 'Tag Service', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303031317800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10013', 'DEFAULT', 'Remove Duplicate', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303031337800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10014', 'DEFAULT', 'GGZY & ZJCS', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303031347800');
+INSERT INTO qrtz_job_details VALUES ('quartzScheduler', '10015', 'DEFAULT', 'Digital GD', 'com.software.dev.job.UrlJob', '0', '1', '0', '0', E'\\xaced0005737200156f72672e71756172747a2e4a6f62446174614d61709fb083e8bfa9b0cb020000787200266f72672e71756172747a2e7574696c732e537472696e674b65794469727479466c61674d61708208e8c3fbc55d280200015a0013616c6c6f77735472616e7369656e74446174617872001d6f72672e71756172747a2e7574696c732e4469727479466c61674d617013e62ead28760ace0200025a000564697274794c00036d617074000f4c6a6176612f7574696c2f4d61703b787001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000174000972657175657374496474000531303031357800');
+
+-- ----------------------------
+-- Records of qrtz_locks
+-- ----------------------------
+INSERT INTO qrtz_locks VALUES ('clusteredScheduler', 'STATE_ACCESS');
+INSERT INTO qrtz_locks VALUES ('clusteredScheduler', 'TRIGGER_ACCESS');
+INSERT INTO qrtz_locks VALUES ('quartzScheduler', 'TRIGGER_ACCESS');
+
+-- ----------------------------
+-- Records of qrtz_scheduler_state
+-- ----------------------------
+INSERT INTO qrtz_scheduler_state VALUES ('clusteredScheduler', 'WORKPC-MOSHOW1554709322150', 1554948079154, 10000);
+
+-- ----------------------------
+-- Records of qrtz_triggers
+-- ----------------------------
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10003', 'DEFAULT', '10003', 'DEFAULT', NULL, 1645891200000, 1645891020404, 5, 'PAUSED', 'CRON', 1645801609000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10004', 'DEFAULT', '10004', 'DEFAULT', NULL, 1645891200000, 1645891020423, 5, 'PAUSED', 'CRON', 1645801362000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10005', 'DEFAULT', '10005', 'DEFAULT', NULL, 1669446000000, 1669444200000, 5, 'WAITING', 'CRON', 1616946650000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10006', 'DEFAULT', '10006', 'DEFAULT', NULL, 1646517600000, 1646500406063, 5, 'PAUSED', 'CRON', 1646322888000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10007', 'DEFAULT', '10007', 'DEFAULT', NULL, 1659499200000, 1659456000000, 5, 'PAUSED', 'CRON', 1659450446000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10009', 'DEFAULT', '10009', 'DEFAULT', NULL, 1669446000000, 1669437469294, 5, 'PAUSED', 'CRON', 1659459072000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10010', 'DEFAULT', '10010', 'DEFAULT', NULL, 1669449600000, 1669442400000, 5, 'PAUSED', 'CRON', 1669441882000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10011', 'DEFAULT', '10011', 'DEFAULT', NULL, 1669467600000, -1, 5, 'WAITING', 'CRON', 1669445774000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10013', 'DEFAULT', '10013', 'DEFAULT', NULL, 1669449600000, 1669442400000, 5, 'WAITING', 'CRON', 1659458890000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10014', 'DEFAULT', '10014', 'DEFAULT', NULL, 1669456800000, 1669437469317, 5, 'PAUSED', 'CRON', 1659458871000, 0, NULL, 0, '');
+INSERT INTO qrtz_triggers VALUES ('quartzScheduler', '10015', 'DEFAULT', '10015', 'DEFAULT', NULL, 1669456800000, 1669437469323, 5, 'PAUSED', 'CRON', 1659458979000, 0, NULL, 0, '');
+
+-- ----------------------------
+-- Records of sys_token
+-- ----------------------------
+INSERT INTO sys_token VALUES (1, '85f3389e-d774-4f64-a96c-d4ba61f988b8');
+
+-- ----------------------------
+-- Records of url_request
+-- ----------------------------
+INSERT INTO url_request VALUES (10001, 'JKOrder平安好医生xxx', 'POST', '0 0 0/1 * * ? *', 'http://localhost:6767/newJkOrder', 0, 6000, NULL);
+INSERT INTO url_request VALUES (10003, 'JKOrder平安好医生2.0', 'POST', '0 0/30 * * * ? *', 'http://localhost:6767/jkOrder2', 0, 6000, '2022-02-21 22:52:27');
+INSERT INTO url_request VALUES (10004, 'DEMO REQUEST', 'POST', '0 0/30 * * * ? *', 'http://localhost:6969/quartz/demo/request', 0, NULL, '2022-02-21 22:47:12');
+INSERT INTO url_request VALUES (10006, '中国政府采购', 'POST', '0 0 0/6 * * ? *', 'http://localhost:8899/tfs/task/ccgp?token=666222XXX', 0, NULL, '2022-02-25 00:12:05');
+INSERT INTO url_request VALUES (10007, 'TFS - 测试任务', 'POST', '0 0 0/12 * * ? *', 'http://localhost:8899/tfs/task/test?token=666222XXX', 0, NULL, '2022-02-26 23:59:45');
+INSERT INTO url_request VALUES (10009, 'TFS - 抓取', 'POST', '0 0 0/3 * * ? *', 'http://localhost:8899/tfs/task/fetch?token=666222XXX', 0, NULL, '2022-08-01 23:17:14');
+INSERT INTO url_request VALUES (10010, 'TFS - 分析', 'POST', '0 0 0/2 * * ? *', 'http://localhost:8899/tfs/task/sync?token=666222XXX', 0, NULL, '2022-08-01 23:16:58');
+INSERT INTO url_request VALUES (10011, 'Tag Service', 'POST', '0 0 0/7 * * ? *', 'http://localhost:8899/tfs/task/tag?token=666222XXX', 1, NULL, '2022-09-12 00:16:00');
+INSERT INTO url_request VALUES (10015, 'Digital GD', 'POST', '0 0 0/6 * * ? *', 'http://localhost:8899/tfs/task/digitalGD?token=666222XXX', 0, NULL, '2022-11-26 13:47:28');
+INSERT INTO url_request VALUES (10013, 'Remove Duplicate', 'POST', '0 0 0/2 * * ? *', 'http://localhost:8899/tfs/task/duplicate?token=666222XXX', 1, NULL, '2022-08-03 00:48:00');
+INSERT INTO url_request VALUES (10014, 'GGZY & ZJCS', 'POST', '0 0 0/6 * * ? *', 'http://localhost:8899/tfs/task/ggzy_zjcs?token=666222XXX', 0, NULL, '2022-08-03 00:47:38');
+
+-- ----------------------------
+-- Records of url_request_token
+-- ----------------------------
+INSERT INTO url_request_token VALUES ('10004', 'http://localhost:6969/quartz/demo/token', 'GET', '{"username":"123456","password":"456789"}', 'JSON', 'token', 'URL', 1, 'msg.token');
+
+-- ----------------------------
+-- Records of url_response
+-- ----------------------------
+INSERT INTO url_response VALUES ('1', '10005', '2021-03-28 23:54:40.000', '{"code":200,"msg":"操作成功","data":null,"count":0}', NULL, NULL, NULL);
+INSERT INTO url_response VALUES ('0111ebf9-4610-4527-a418-049e73581bf1', '10004', '2022-02-20 15:36:58.000', '{"msg":"请求成功，TOKEN有效","code":0}', NULL, NULL, NULL);
+INSERT INTO url_response VALUES ('544f6d8c-d70c-43e2-8a41-72b1870b38d9', '10004', '2022-02-20 15:46:34.000', '{"msg":"请求成功，TOKEN有效","code":0}', NULL, NULL, NULL);
+INSERT INTO url_response VALUES ('ed8311b8-4a58-400a-a691-7c50f6a1f19e', '10004', '2022-02-20 15:49:49.000', '{"msg":"请求成功，TOKEN有效","code":0}', NULL, NULL, NULL);
+INSERT INTO url_response VALUES ('16dfbeeb-9b70-481e-8236-bbac0bff5bcb', '10004', '2022-02-20 16:30:00.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 16:30:00.000', NULL);
+INSERT INTO url_response VALUES ('f9ad2d5b-a0f1-4d15-89d1-9912e66e6ecb', '10004', '2022-02-20 17:00:00.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 17:00:00.000', NULL);
+INSERT INTO url_response VALUES ('d8ddc158-55ec-4f7c-a744-a210c3c88f65', '10004', '2022-02-20 17:30:00.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 17:30:00.000', NULL);
+INSERT INTO url_response VALUES ('d8973498-86f0-48a1-97b9-ef5885b7c9fc', '10004', '2022-02-20 17:34:08.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 17:34:08.000', NULL);
+INSERT INTO url_response VALUES ('98e96ff3-1848-44a3-8db8-49221580f653', '10004', '2022-02-20 18:00:00.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 18:00:00.000', NULL);
+INSERT INTO url_response VALUES ('1ce52d7d-b98d-454d-b177-e7aa64da2240', '10004', '2022-02-20 18:30:00.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 18:30:00.000', NULL);
+INSERT INTO url_response VALUES ('1abda533-e0a0-4f3a-9dc5-80fc2da83105', '10004', '2022-02-20 19:00:00.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 19:00:00.000', NULL);
+INSERT INTO url_response VALUES ('ee26b1c1-e3d4-4e14-8c6d-5fc6285cac51', '10004', '2022-02-20 19:29:22.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 19:29:22.000', NULL);
+INSERT INTO url_response VALUES ('8e207363-839e-4893-abc1-1e2d12ba64fd', '10004', '2022-02-20 19:30:00.000', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 19:30:00.000', NULL);
+INSERT INTO url_response VALUES ('69cf8db8-c841-453c-9d4b-956ec4ae623b', '10004', '2022-02-20 19:30:55.642', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 19:30:55.638', NULL);
+INSERT INTO url_response VALUES ('3b148b04-b5b7-4b0a-880d-fb37122adfee', '10004', '2022-02-20 19:33:38.270', '{"msg":"请求失败","code":500}', 9, '2022-02-20 19:33:38.257', NULL);
+INSERT INTO url_response VALUES ('fef77cdc-b021-4f8c-a921-2cd2cac315f3', '10004', '2022-02-20 20:00:00.102', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 20:00:00.098', NULL);
+INSERT INTO url_response VALUES ('1cdd57b2-85d5-49d4-a282-362f54421cab', '10004', '2022-02-20 20:30:00.095', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 20:30:00.092', NULL);
+INSERT INTO url_response VALUES ('d11408f0-abad-46be-8ba7-61a681be7ba7', '10004', '2022-02-20 21:00:00.058', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 21:00:00.054', NULL);
+INSERT INTO url_response VALUES ('728f0055-0ee8-4865-ab54-de79ff45dc47', '10004', '2022-02-20 21:30:00.114', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 21:30:00.106', NULL);
+INSERT INTO url_response VALUES ('6123f2bd-509a-43b2-963b-abf795ccb9df', '10004', '2022-02-20 22:00:00.071', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 22:00:00.068', NULL);
+INSERT INTO url_response VALUES ('329373e0-2e8b-4b8b-8bbc-f21331cf019d', '10004', '2022-02-20 22:30:00.518', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-20 22:30:00.502', NULL);
+INSERT INTO url_response VALUES ('1a4d23a7-2224-4b64-8c8d-c25367540d09', '10004', '2022-02-21 22:23:51.232', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-21 22:23:51.213', NULL);
+INSERT INTO url_response VALUES ('6ce084f1-d8c0-4f43-82f5-2955a7c83f6d', '10004', '2022-02-21 22:30:00.060', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-21 22:30:00.056', NULL);
+INSERT INTO url_response VALUES ('7ca09ced-82ae-4c31-bdf4-2414837087d4', '10004', '2022-02-21 23:00:00.075', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-21 23:00:00.070', NULL);
+INSERT INTO url_response VALUES ('bb15c9a1-41b5-4d8e-b4bf-656b317c2c10', '10004', '2022-02-21 23:30:00.433', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-21 23:30:00.420', NULL);
+INSERT INTO url_response VALUES ('ac02bc3b-c95c-4b49-8b2d-1d3386f28558', '10004', '2022-02-25 00:02:47.630', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-25 00:02:47.605', NULL);
+INSERT INTO url_response VALUES ('f3ce69ad-df09-4dcc-a44a-279cae9b3b80', '10006', '2022-02-25 00:08:43.581', '{"code":500,"msg":"授权失败::定时任务无法启动","data":null,"count":0}', 1, '2022-02-25 00:08:42.902', NULL);
+INSERT INTO url_response VALUES ('4e8895d6-3fd4-4c5d-af71-c6285adae027', '10006', '2022-02-25 00:14:24.454', 'Connection refused: connect', 9, '2022-02-25 00:12:09.266', NULL);
+INSERT INTO url_response VALUES ('7e4be502-4c74-40d5-a59d-e2ed34480829', '10006', '2022-02-25 00:18:56.957', 'Connection refused: connect', 9, '2022-02-25 00:18:00.616', NULL);
+INSERT INTO url_response VALUES ('176c2e10-302f-4fe9-a324-2120db3560e8', '10006', '2022-02-25 22:52:29.150', 'ConnectException: Connection refused: connect', 9, '2022-02-25 22:52:27.031', NULL);
+INSERT INTO url_response VALUES ('f2c08640-e793-4919-bae2-35152c6b102c', '10004', '2022-02-25 23:02:44.951', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-25 23:02:44.937', NULL);
+INSERT INTO url_response VALUES ('d166fc20-5cf1-42a7-aaa9-7b1e7b09d031', '10004', '2022-02-25 23:03:55.278', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-25 23:03:55.274', NULL);
+INSERT INTO url_response VALUES ('452d5299-1ec0-4ffd-8660-70183088c85c', '10003', '2022-02-25 23:04:22.476', 'ConnectException: Connection refused: connect', 9, '2022-02-25 23:04:20.439', NULL);
+INSERT INTO url_response VALUES ('751439b7-a0d0-4ba6-a378-b42c2f7efeae', '10003', '2022-02-25 23:06:55.255', 'ConnectException: Connection refused: connect', 9, '2022-02-25 23:06:53.168', NULL);
+INSERT INTO url_response VALUES ('d36930e9-14d7-4856-88b8-841d31167b07', '10003', '2022-02-25 23:07:02.443', 'ConnectException: Connection refused: connect', 9, '2022-02-25 23:07:00.410', NULL);
+INSERT INTO url_response VALUES ('d103c128-105f-4d91-8cef-0809707cfbd7', '10004', '2022-02-25 23:30:00.184', '{"msg":"请求成功，TOKEN有效","code":0}', 1, '2022-02-25 23:30:00.176', NULL);
+INSERT INTO url_response VALUES ('fbf9864b-9455-4fdf-b396-afb7affe2b99', '10003', '2022-02-25 23:30:02.139', 'ConnectException: Connection refused: connect', 9, '2022-02-25 23:30:00.083', NULL);
+INSERT INTO url_response VALUES ('1ad06c84-2fe4-4821-b218-66b77c2a4774', '10003', '2022-02-26 00:00:02.141', 'ConnectException: Connection refused: connect', 9, '2022-02-26 00:00:00.095', NULL);
+INSERT INTO url_response VALUES ('172815bc-72d1-48b9-b435-0a584b89d8f6', '10003', '2022-02-26 00:30:02.082', 'ConnectException: Connection refused: connect', 9, '2022-02-26 00:30:00.061', NULL);
+INSERT INTO url_response VALUES ('0cf20e0f-aba2-4532-8a75-ee405cf5da1d', '10003', '2022-02-26 01:00:02.322', 'ConnectException: Connection refused: connect', 9, '2022-02-26 01:00:00.228', NULL);
+INSERT INTO url_response VALUES ('4fae4c3b-b294-4244-99bb-c1626575a38f', '10003', '2022-02-26 23:57:03.178', 'ConnectException: Connection refused: connect', 9, '2022-02-26 23:57:00.996', NULL);
+INSERT INTO url_response VALUES ('d17ef159-59a9-4b26-894b-ca80fe61e383', '10007', '2022-02-27 00:01:10.272', '{"code":500,"msg":"No format fit for date String [<div class=\"news-list__annunciate__date\">2022-02-25</div>] !","data":null,"count":0}', 1, '2022-02-27 00:01:09.043', NULL);
+INSERT INTO url_response VALUES ('e35544fa-479e-4386-b58e-c6f64f8e63b0', '10007', '2022-02-27 00:04:50.213', '{"code":200,"msg":"定时任务处理成功::testTask","data":null,"count":0}', 1, '2022-02-27 00:04:49.161', NULL);
+INSERT INTO url_response VALUES ('f63b745f-43c3-472b-893e-a408fa319c29', '10007', '2022-02-27 00:48:11.004', '{"code":200,"msg":"定时任务处理成功::testTask","data":null,"count":0}', 1, '2022-02-27 00:47:25.184', NULL);
+
+-- ----------------------------
+-- Records of url_response_assumption
+-- ----------------------------
+INSERT INTO url_response_assumption VALUES ('10001', 'success', '成功', '', '', '', '', '失败', 1);
+INSERT INTO url_response_assumption VALUES ('10010', '定时任务处理成功', '成功', '', '', '', '', '失败', 1);
+INSERT INTO url_response_assumption VALUES ('10009', '定时任务处理成功', '成功', '', '', '', '', '失败', 1);
+INSERT INTO url_response_assumption VALUES ('10007', '定时任务处理成功', '成功', '', '', '', '', '失败', 1);

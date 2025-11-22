@@ -1,8 +1,5 @@
 package com.software.dev.job;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.http.HttpUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.software.dev.domain.UrlRequest;
 import com.software.dev.domain.UrlRequestToken;
