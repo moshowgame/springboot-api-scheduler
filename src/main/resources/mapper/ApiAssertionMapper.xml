@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.software.dev.mapper.ApiAssertionMapper">
+
+    <resultMap id="ApiAssertionResultMap" type="com.software.dev.entity.ApiAssertion">
+        <id property="id" column="id"/>
+        <result property="taskId" column="task_id"/>
+        <result property="assertionType" column="assertion_type"/>
+        <result property="expectedValue" column="expected_value"/>
+        <result property="actualValue" column="actual_value"/>
+        <result property="passed" column="passed"/>
+        <result property="errorMessage" column="error_message"/>
+        <result property="sortOrder" column="sort_order"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.software.dev.entity.ApiAssertion">
+        INSERT INTO api_assertion (id, task_id, assertion_type, expected_value, actual_value, passed, error_message, sort_order)
+        VALUES (#{id}, #{taskId}, #{assertionType}, #{expectedValue}, #{actualValue}, #{passed}, #{errorMessage}, #{sortOrder})
+    </insert>
+
+    <update id="update" parameterType="com.software.dev.entity.ApiAssertion">
+        UPDATE api_assertion 
+        SET assertion_type = #{assertionType}, 
+            expected_value = #{expectedValue}, 
+            actual_value = #{actualValue}, 
+            passed = #{passed}, 
+            error_message = #{errorMessage}, 
+            sort_order = #{sortOrder}
+        WHERE id = #{id}
+    </update>
+
+    <select id="findByTaskId" resultMap="ApiAssertionResultMap">
+        SELECT * FROM api_assertion WHERE task_id = #{taskId} ORDER BY sort_order ASC
+    </select>
+
+    <select id="findByResponseId" resultMap="ApiAssertionResultMap">
+        SELECT * FROM api_assertion WHERE response_id = #{responseId} ORDER BY sort_order ASC
+    </select>
+
+    <delete id="deleteByTaskId">
+        DELETE FROM api_assertion WHERE task_id = #{taskId}
+    </delete>
+
+</mapper>

@@ -251,6 +251,8 @@ mybatis:
 ### v2.0 (2025-11-23)
 - ✨ spring-boot-UrlTaskScheduler全新改名为springboot-api-scheduler
 - ✅ 重构项目
+- ✅ 用户登录功能
+- ✅ 断言功能重构 [ASSERTION_GUIDE.md](ASSERTION_GUIDE.md)
 
 ### v1.0
 | 日期 | 更新内容 |

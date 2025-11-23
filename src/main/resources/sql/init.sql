@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS api_task (
     description TEXT,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_execute_time TIMESTAMP
+    last_execute_time TIMESTAMP,
+    assertions TEXT
 );
 
 -- 创建更新时间触发器函数
@@ -74,13 +75,31 @@ CREATE TABLE IF NOT EXISTS api_response (
     response_time BIGINT,
     status VARCHAR(20) NOT NULL,
     error_message TEXT,
-    execute_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    execute_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    assertion_result TEXT,
+    all_assertions_passed BOOLEAN
+);
+
+-- 创建断言表
+CREATE TABLE IF NOT EXISTS api_assertion (
+    id VARCHAR(50) PRIMARY KEY,
+    task_id VARCHAR(50) NOT NULL UNIQUE,
+    response_id VARCHAR(50),
+    assertion_type VARCHAR(20) NOT NULL,
+    expected_value TEXT NOT NULL,
+    actual_value TEXT,
+    passed BOOLEAN,
+    error_message TEXT,
+    sort_order INT DEFAULT 0,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 创建索引
 CREATE INDEX IF NOT EXISTS idx_user_username ON sys_user(username);
 CREATE INDEX IF NOT EXISTS idx_api_response_task_id ON api_response(task_id);
 CREATE INDEX IF NOT EXISTS idx_api_response_execute_time ON api_response(execute_time);
+CREATE INDEX IF NOT EXISTS idx_api_assertion_task_id ON api_assertion(task_id);
+CREATE INDEX IF NOT EXISTS idx_api_assertion_response_id ON api_assertion(response_id);
 
 -- 插入默认用户数据 (密码: admin123, MD5加密后)
 INSERT INTO sys_user (id, username, password, enabled) VALUES

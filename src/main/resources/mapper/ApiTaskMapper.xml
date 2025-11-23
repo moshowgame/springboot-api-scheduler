@@ -16,6 +16,7 @@
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="lastExecuteTime" column="last_execute_time"/>
+        <result property="assertions" column="assertions"/>
     </resultMap>
 
     <select id="findAll" resultMap="ApiTaskResult">
@@ -31,8 +32,8 @@
     </select>
 
     <insert id="insert" parameterType="com.software.dev.entity.ApiTask">
-        INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time)
-        VALUES (#{id}, #{taskName}, #{url}, #{method}, #{timeout}, #{headers}, #{parameters}, #{cronExpression}, #{status}, #{description}, NOW(), NOW())
+        INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time, assertions)
+        VALUES (#{id}, #{taskName}, #{url}, #{method}, #{timeout}, #{headers}, #{parameters}, #{cronExpression}, #{status}, #{description}, NOW(), NOW(), #{assertions})
     </insert>
 
     <update id="update" parameterType="com.software.dev.entity.ApiTask">
@@ -46,7 +47,8 @@
             cron_expression = #{cronExpression}, 
             status = #{status}, 
             description = #{description}, 
-            update_time = NOW()
+            update_time = NOW(),
+            assertions = #{assertions}
         WHERE id = #{id}
     </update>
 

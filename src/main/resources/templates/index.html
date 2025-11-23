@@ -60,6 +60,7 @@
                                             <button class="btn btn-sm btn-success" @click="startTask(task.id)" v-if="task.status === 'PAUSED'">启动</button>
                                             <button class="btn btn-sm btn-warning" @click="pauseTask(task.id)" v-if="task.status === 'RUNNING'">暂停</button>
                                             <button class="btn btn-sm btn-info" @click="executeTask(task.id)">执行</button>
+                                            <button class="btn btn-sm btn-primary" @click="configAssertions(task)">断言</button>
                                             <button class="btn btn-sm btn-secondary" @click="editTask(task)">编辑</button>
                                             <button class="btn btn-sm btn-danger" @click="deleteTask(task.id)">删除</button>
                                         </td>
@@ -91,6 +92,7 @@
                                         <th>响应码</th>
                                         <th>响应时间(ms)</th>
                                         <th>状态</th>
+                                        <th>断言结果</th>
                                         <th>执行时间</th>
                                         <th>操作</th>
                                     </tr>
@@ -105,6 +107,12 @@
                                         <td>{{ log.responseTime }}</td>
                                         <td>
                                             <span :class="getStatusClass(log.status)">{{ log.status }}</span>
+                                        </td>
+                                        <td>
+                                            <span v-if="log.assertionResult" :class="getAssertionClass(log.allAssertionsPassed)">
+                                                {{ log.assertionResult }}
+                                            </span>
+                                            <span v-else class="text-muted">无断言</span>
                                         </td>
                                         <td>{{ formatDateTime(log.executeTime) }}</td>
                                         <td>
@@ -251,6 +259,106 @@
                                 <label class="form-label">错误信息</label>
                                 <textarea class="form-control" v-model="currentLog.errorMessage" rows="3" readonly></textarea>
                             </div>
+                            <div v-if="currentLog.assertionResult" class="mb-3">
+                                <label class="form-label">断言结果</label>
+                                <div class="alert" :class="currentLog.allAssertionsPassed ? 'alert-success' : 'alert-danger'">
+                                    {{ currentLog.assertionResult }}
+                                </div>
+                                <button type="button" class="btn btn-sm btn-info" @click="viewAssertions(currentLog.id)">查看详细断言</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 断言配置模态框 -->
+        <div class="modal fade" id="assertionConfigModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">断言配置 - {{ currentConfigTask.taskName || '未知任务' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <h6 class="mb-3">断言规则</h6>
+                            
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-3">
+                                            <label class="form-label">断言类型</label>
+                                            <select class="form-select" v-model="currentAssertion.assertionType">
+                                                <option value="">选择类型</option>
+                                                <option value="HTTP_CODE">HTTP状态码</option>
+                                                <option value="JSON_CONTAINS">JSON包含关键字</option>
+                                                <option value="JSON_PATH">JSON路径</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">期望值</label>
+                                            <input type="text" class="form-control" 
+                                                   v-model="currentAssertion.expectedValue" 
+                                                   :placeholder="getAssertionPlaceholder(currentAssertion.assertionType)">
+                                        </div>
+                                        <div class="col-md-3">
+                                        </div>
+                                    </div>
+                                    <div v-if="currentAssertion.assertionType" class="mt-2">
+                                        <small class="text-muted">{{ getAssertionDescription(currentAssertion.assertionType) }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" @click="saveAssertions">保存断言</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 断言详情模态框 -->
+        <div class="modal fade" id="assertionModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">断言详情</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="currentAssertions.length === 0" class="text-muted text-center py-3">
+                            暂无断言结果
+                        </div>
+                        <div v-for="assertion in currentAssertions" :key="assertion.id" class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>断言类型:</strong><br>
+                                        <span class="badge bg-primary">{{ getAssertionTypeName(assertion.assertionType) }}</span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>期望值:</strong><br>
+                                        <code>{{ assertion.expectedValue }}</code>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <strong>实际值:</strong><br>
+                                        <code>{{ assertion.actualValue || '无' }}</code>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <strong>结果:</strong><br>
+                                        <span :class="assertion.passed ? 'badge bg-success' : 'badge bg-danger'">
+                                            {{ assertion.passed ? '通过' : '失败' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div v-if="assertion.errorMessage" class="mt-2">
+                                    <strong>错误信息:</strong>
+                                    <div class="alert alert-danger py-1">{{ assertion.errorMessage }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -270,9 +378,17 @@
                     logs: [],
                     currentTask: {},
                     currentLog: {},
+                    currentAssertion: {
+                        assertionType: 'HTTP_CODE',
+                        expectedValue: ''
+                    },
+                    currentAssertions: [], // 用于查看断言结果
+                    currentConfigTask: {},
                     editingTask: false,
                     taskModal: null,
                     logDetailModal: null,
+                    assertionModal: null,
+                    assertionConfigModal: null,
                     currentUser: ''
                 };
             },
@@ -282,6 +398,8 @@
                 
                 this.taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
                 this.logDetailModal = new bootstrap.Modal(document.getElementById('logDetailModal'));
+                this.assertionModal = new bootstrap.Modal(document.getElementById('assertionModal'));
+                this.assertionConfigModal = new bootstrap.Modal(document.getElementById('assertionConfigModal'));
                 this.loadTasks();
                 this.loadLogs();
             },
@@ -296,17 +414,19 @@
                 async loadTasks() {
                     try {
                         const response = await axios.get('/api/tasks');
-                        this.tasks = response.data.data;
+                        this.tasks = (response.data && response.data.data) ? response.data.data : [];
                     } catch (error) {
                         console.error('Failed to load tasks:', error);
+                        this.tasks = [];
                     }
                 },
                 async loadLogs() {
                     try {
                         const response = await axios.get('/api/responses');
-                        this.logs = response.data.data;
+                        this.logs = (response.data && response.data.data) ? response.data.data : [];
                     } catch (error) {
                         console.error('Failed to load logs:', error);
+                        this.logs = [];
                     }
                 },
                 showAddTaskModal() {
@@ -323,18 +443,20 @@
                     };
                     this.taskModal.show();
                 },
-                editTask(task) {
+                async editTask(task) {
                     this.editingTask = true;
                     this.currentTask = { ...task };
                     this.taskModal.show();
                 },
                 async saveTask() {
                     try {
+                        // 保存任务
                         if (this.editingTask) {
                             await axios.put(`/api/tasks/${this.currentTask.id}`, this.currentTask);
                         } else {
                             await axios.post('/api/tasks', this.currentTask);
                         }
+                        
                         this.taskModal.hide();
                         this.loadTasks();
                     } catch (error) {
@@ -413,6 +535,116 @@
                     } catch (error) {
                         console.error('Logout failed:', error);
                         window.location.href = '/login';
+                    }
+                },
+                // 断言相关方法
+                async loadTaskAssertions(taskId) {
+                    try {
+                        const response = await axios.get(`/api/assertions/task/${taskId}`);
+                        const assertions = (response.data && response.data.data) ? response.data.data : [];
+                        if (assertions.length > 0) {
+                            this.currentAssertion = {
+                                id: assertions[0].id,
+                                assertionType: assertions[0].assertionType,
+                                expectedValue: assertions[0].expectedValue
+                            };
+                        } else {
+                            this.currentAssertion = {
+                                assertionType: 'HTTP_CODE',
+                                expectedValue: ''
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Failed to load task assertions:', error);
+                        this.currentAssertion = {
+                            assertionType: 'HTTP_CODE',
+                            expectedValue: ''
+                        };
+                    }
+                },
+                async viewAssertions(responseId) {
+                    try {
+                        const response = await axios.get(`/api/assertions/response/${responseId}`);
+                        this.currentAssertions = (response.data && response.data.data) ? response.data.data : [];
+                        this.assertionModal.show();
+                    } catch (error) {
+                        console.error('Failed to load assertions:', error);
+                        this.currentAssertions = [];
+                    }
+                },
+                addAssertion() {
+                    // 单个断言，不需要添加方法
+                },
+                removeAssertion(index) {
+                    // 单个断言，不需要删除方法
+                },
+                getAssertionPlaceholder(type) {
+                    switch (type) {
+                        case 'HTTP_CODE':
+                            return '例如: 200, 500';
+                        case 'JSON_CONTAINS':
+                            return '例如: success, error';
+                        case 'JSON_PATH':
+                            return '例如: $.msg, $.data.status';
+                        default:
+                            return '请选择断言类型';
+                    }
+                },
+                getAssertionDescription(type) {
+                    switch (type) {
+                        case 'HTTP_CODE':
+                            return '检查HTTP响应状态码是否等于指定值';
+                        case 'JSON_CONTAINS':
+                            return '检查响应体是否包含指定的关键字';
+                        case 'JSON_PATH':
+                            return '使用JSONPath表达式检查响应体中的特定字段值';
+                        default:
+                            return '';
+                    }
+                },
+                getAssertionTypeName(type) {
+                    switch (type) {
+                        case 'HTTP_CODE':
+                            return 'HTTP状态码';
+                        case 'JSON_CONTAINS':
+                            return 'JSON包含';
+                        case 'JSON_PATH':
+                            return 'JSON路径';
+                        default:
+                            return type;
+                    }
+                },
+                getAssertionClass(passed) {
+                    return {
+                        'badge bg-success': passed === true,
+                        'badge bg-danger': passed === false,
+                        'badge bg-secondary': passed === null || passed === undefined
+                    };
+                },
+                // 断言配置相关方法
+                async configAssertions(task) {
+                    this.currentConfigTask = { ...task };
+                    await this.loadTaskAssertions(task.id);
+                    this.assertionConfigModal.show();
+                },
+                async saveAssertions() {
+                    try {
+                        if (!this.currentConfigTask || !this.currentConfigTask.id) {
+                            console.error('No task selected for assertion configuration');
+                            return;
+                        }
+                        
+                        if (this.currentAssertion && this.currentAssertion.assertionType && this.currentAssertion.expectedValue) {
+                            await axios.post(`/api/assertions/task/${this.currentConfigTask.id}`, this.currentAssertion);
+                        } else {
+                            // 如果没有断言配置，删除现有断言
+                            await axios.delete(`/api/assertions/task/${this.currentConfigTask.id}`);
+                        }
+                        this.assertionConfigModal.hide();
+                        this.loadTasks();
+                    } catch (error) {
+                        console.error('Failed to save assertions:', error);
+                        alert('保存断言失败: ' + (error.response?.data?.message || error.message));
                     }
                 }
             }

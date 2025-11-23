@@ -1,9 +1,11 @@
 package com.software.dev.service.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.software.dev.entity.ApiAssertion;
 import com.software.dev.entity.ApiResponse;
 import com.software.dev.entity.ApiTask;
 import com.software.dev.mapper.ApiTaskMapper;
+import com.software.dev.service.ApiAssertionService;
 import com.software.dev.service.ApiResponseService;
 import com.software.dev.service.TaskSchedulerService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
@@ -30,6 +33,9 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
     
     @Autowired
     private ApiResponseService apiResponseService;
+    
+    @Autowired
+    private ApiAssertionService apiAssertionService;
     
     private final OkHttpClient httpClient;
     private final Map<String, ScheduledFuture<?>> scheduledTasks = new ConcurrentHashMap<>();
@@ -142,7 +148,45 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
             log.error("Task execution failed: {}", task.getTaskName(), e);
         }
         
+        // 执行断言
+        try {
+            List<ApiAssertion> assertionResults = apiAssertionService.executeAssertions(
+                task.getId(), 
+                response.getResponseBody(), 
+                response.getResponseCode()
+            );
+            
+            if (!assertionResults.isEmpty()) {
+
+                // 汇总断言结果
+                boolean allPassed = assertionResults.stream().allMatch(ApiAssertion::getPassed);
+                response.setAllAssertionsPassed(allPassed);
+                
+                StringBuilder resultSummary = new StringBuilder();
+                resultSummary.append("断言总数: ").append(assertionResults.size());
+                resultSummary.append(", 通过: ").append(assertionResults.stream().mapToInt(a -> a.getPassed() ? 1 : 0).sum());
+                resultSummary.append(", 失败: ").append(assertionResults.stream().mapToInt(a -> !a.getPassed() ? 1 : 0).sum());
+                
+                if (!allPassed) {
+                    resultSummary.append(" | 失败原因: ");
+                    assertionResults.stream()
+                        .filter(a -> !a.getPassed() && a.getErrorMessage() != null)
+                        .findFirst()
+                        .ifPresent(a -> resultSummary.append(a.getErrorMessage()));
+                }
+                
+                response.setAssertionResult(resultSummary.toString());
+                
+                log.info("断言执行完成 - 任务: {}, 结果: {}", task.getTaskName(), resultSummary.toString());
+            }
+        } catch (Exception e) {
+            log.error("断言执行异常 - 任务: {}", task.getTaskName(), e);
+            response.setAssertionResult("断言执行异常: " + e.getMessage());
+            response.setAllAssertionsPassed(false);
+        }
+        
         apiResponseService.save(response);
-        log.info("Task execution completed: {} - Status: {}", task.getTaskName(), response.getStatus());
+        log.info("Task execution completed: {} - Status: {} - Assertions: {}", 
+            task.getTaskName(), response.getStatus(), response.getAssertionResult());
     }
 }

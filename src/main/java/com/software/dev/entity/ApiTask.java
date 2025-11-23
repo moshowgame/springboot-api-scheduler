@@ -18,4 +18,5 @@ public class ApiTask {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private LocalDateTime lastExecuteTime;
+    private String assertions; // 断言配置JSON
 }
