@@ -1,18 +1,16 @@
 package com.software.dev.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.software.dev.domain.*;
 import com.software.dev.job.UrlJob;
-import com.software.dev.mapper.UrlRequestMapper;
-import com.software.dev.mapper.UrlResponseMapper;
+import com.software.dev.repository.UrlRequestRepository;
+import com.software.dev.repository.UrlResponseRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -33,20 +31,20 @@ public class UrlTaskController {
     @Autowired
     private Scheduler scheduler;
     @Autowired
-    private UrlRequestMapper urlRequestMapper;
+    private UrlRequestRepository urlRequestRepository;
     @Autowired
-    private UrlResponseMapper urlResponseMapper;
+    private UrlResponseRepository urlResponseRepository;
 
     @PostMapping("/request/info")
     public Result info(@RequestBody PageParam param){
-        return Result.ok().put("data",urlRequestMapper.selectById(param.getRequestId()));
+        return Result.ok().put("data",urlRequestRepository.findById(param.getRequestId()).orElse(null));
     }
     @RequestMapping("/request/list")
     public Result requestList(@RequestBody PageParam param){
         log.info("请求列表{}",JSON.toJSONString(param));
         //手动分页
-        List<UrlRequest> data= urlRequestMapper.listUrl((param.getPage()-1)*param.getLimit(),param.getLimit(),(StringUtils.isEmpty(param.getSearch()))?null:param.getSearch());
-        Long total= urlRequestMapper.selectCount(new QueryWrapper<UrlRequest>());
+        List<UrlRequest> data= urlRequestRepository.listUrl((param.getPage()-1)*param.getLimit(),param.getLimit(),(StringUtils.isEmpty(param.getSearch()))?null:param.getSearch());
+        Long total= urlRequestRepository.count();
 //        log.info(JSON.toJSONString(data));
         PageUtils page = new PageUtils(data,total,param.getLimit(),param.getPage());
 
@@ -54,19 +52,29 @@ public class UrlTaskController {
     }
     @PostMapping("/request/list2")
     public Result requestList2(){
-        List<UrlRequest> data= urlRequestMapper.selectList(new QueryWrapper<UrlRequest>().select("request_id","request_name").orderByAsc("request_id"));
+        List<UrlRequest> data= urlRequestRepository.findAllByOrderByRequestIdAsc();
         return Result.ok().put("data", data);
     }
     @PostMapping("/response/list")
     public Result responseList(@RequestBody PageParam param){
         log.info("响应列表{}",JSON.toJSONString(param));
-        //自带分页
-        IPage<UrlResponse> iPage= urlResponseMapper.selectPage(new Page<UrlResponse>(param.getPage(),param.getLimit()),
-                new QueryWrapper<UrlResponse>().eq(StringUtils.isNotBlank(param.getRequestId()),"request_id",param.getRequestId()).like(StringUtils.isNotBlank(param.getSearch()),"response_text",param.getSearch()).orderByDesc("response_time")
-        );
-        PageUtils page = new PageUtils(iPage.getRecords(), (int) iPage.getTotal(),param.getLimit(),param.getPage());
+        //JPA分页
+        Pageable pageable = PageRequest.of(param.getPage() - 1, param.getLimit());
+        org.springframework.data.domain.Page<UrlResponse> page;
+        
+        if (StringUtils.isNotBlank(param.getRequestId()) && StringUtils.isNotBlank(param.getSearch())) {
+            page = urlResponseRepository.findByRequestIdAndResponseTextContainingOrderByResponseTimeDesc(param.getRequestId(), param.getSearch(), pageable);
+        } else if (StringUtils.isNotBlank(param.getRequestId())) {
+            page = urlResponseRepository.findByRequestIdOrderByResponseTimeDesc(param.getRequestId(), pageable);
+        } else if (StringUtils.isNotBlank(param.getSearch())) {
+            page = urlResponseRepository.findByResponseTextContainingOrderByResponseTimeDesc(param.getSearch(), pageable);
+        } else {
+            page = urlResponseRepository.findAllByOrderByResponseTimeDesc(pageable);
+        }
+        
+        PageUtils pageUtils = new PageUtils(page.getContent(), (int) page.getTotalElements(), param.getLimit(), param.getPage());
 
-        return Result.ok().put("page", page);
+        return Result.ok().put("page", pageUtils);
     }
     @PostMapping("/request/trigger")
     public  Result trigger(String requestId) {
@@ -87,12 +95,10 @@ public class UrlTaskController {
             JobKey key = new JobKey(requestId,UrlJob.DEFAULT_GROUP);
             scheduler.pauseJob(key);
             //修改对应状态
-            UrlRequest urlRequest=urlRequestMapper.selectById(requestId);
+            UrlRequest urlRequest=urlRequestRepository.findById(requestId).orElse(null);
             if(urlRequest!=null) {
                 urlRequest.setStatus(UrlRequest.RequestStatus.STOP);
-                urlRequestMapper.update(urlRequest,
-                        new UpdateWrapper<UrlRequest>().eq("request_id", urlRequest.getRequestId())
-                );
+                urlRequestRepository.save(urlRequest);
             }
         } catch (SchedulerException e) {
             e.printStackTrace();
@@ -108,12 +114,10 @@ public class UrlTaskController {
             JobKey key = new JobKey(requestId,UrlJob.DEFAULT_GROUP);
             scheduler.resumeJob(key);
             //修改对应状态
-            UrlRequest urlRequest=urlRequestMapper.selectById(requestId);
+            UrlRequest urlRequest=urlRequestRepository.findById(requestId).orElse(null);
             if(urlRequest!=null) {
                 urlRequest.setStatus(UrlRequest.RequestStatus.START);
-                urlRequestMapper.update(urlRequest,
-                        new UpdateWrapper<UrlRequest>().eq("request_id", urlRequest.getRequestId())
-                );
+                urlRequestRepository.save(urlRequest);
             }
         } catch (SchedulerException e) {
             e.printStackTrace();
@@ -133,12 +137,10 @@ public class UrlTaskController {
             // 删除任务
             scheduler.deleteJob(jobKey);
             //修改对应状态
-            UrlRequest urlRequest=urlRequestMapper.selectById(requestId);
+            UrlRequest urlRequest=urlRequestRepository.findById(requestId).orElse(null);
             if(urlRequest!=null) {
                 urlRequest.setStatus(UrlRequest.RequestStatus.STOP);
-                urlRequestMapper.update(urlRequest,
-                        new UpdateWrapper<UrlRequest>().eq("request_id", urlRequest.getRequestId())
-                );
+                urlRequestRepository.save(urlRequest);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -154,10 +156,10 @@ public class UrlTaskController {
     @PostMapping("/request/delete")
     public  Result delete(String requestId) {
         log.info("移除任务:"+requestId);
-        if(requestId!=null&&urlRequestMapper.selectById(requestId)!=null){
+        if(requestId!=null&&urlRequestRepository.existsById(requestId)){
             //先移除任务
             remove(requestId);
-            urlRequestMapper.deleteById(requestId);
+            urlRequestRepository.deleteById(requestId);
             return Result.ok("删除成功");
         }else{
             return Result.error("记录不存在");
@@ -166,7 +168,7 @@ public class UrlTaskController {
     @PostMapping("/request/start")
     public Result start(String requestId){
         log.info("启动任务:"+requestId);
-        UrlRequest urlRequest=urlRequestMapper.selectOne(new QueryWrapper<UrlRequest>().eq("request_id",requestId));
+        UrlRequest urlRequest=urlRequestRepository.findById(requestId).orElse(null);
         if(urlRequest!=null){
             try {
                 log.info("确认是否有旧任务，删除重新添加");
@@ -193,7 +195,7 @@ public class UrlTaskController {
                 scheduler.scheduleJob(job, trigger);
                 //修改对应状态
                 urlRequest.setStatus(UrlRequest.RequestStatus.START);
-                urlRequestMapper.updateById(urlRequest);
+                urlRequestRepository.save(urlRequest);
             } catch (Exception e) {
                 e.printStackTrace();
                 return Result.error(e.getMessage());
@@ -206,7 +208,7 @@ public class UrlTaskController {
         for (int i = 0; i < n; i++) {
             UrlRequest urlRequest=new UrlRequest();
             urlRequest.setRequestMethod("POST");
-            urlRequestMapper.insert(urlRequest);
+            urlRequestRepository.save(urlRequest);
         }
         return Result.ok();
     }
@@ -222,11 +224,7 @@ public class UrlTaskController {
             urlRequest.setRequestMethod("GET");
         }
         urlRequest.setUpdateTime(new Date());
-        if(urlRequestMapper.selectById(urlRequest.getRequestId())!=null){
-            urlRequestMapper.updateById(urlRequest);
-        }else{
-            urlRequestMapper.insert(urlRequest);
-        }
+        urlRequestRepository.save(urlRequest);
         return Result.ok("保存成功");
     }
 }

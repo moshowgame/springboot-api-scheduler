@@ -1,9 +1,8 @@
 package com.software.dev.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.software.dev.domain.Result;
 import com.software.dev.domain.SysToken;
-import com.software.dev.mapper.SysTokenMapper;
+import com.software.dev.repository.SysTokenRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 class IndexController {
 
     @Autowired
-    SysTokenMapper sysTokenMapper;
+    SysTokenRepository sysTokenRepository;
 
     @GetMapping("/index")
     public ModelAndView index(){
@@ -38,7 +37,7 @@ class IndexController {
             return Result.ok("已登录");
         }else if(StringUtils.isEmpty(token)&&token.length()<10){
             return Result.error("请输入合法的登录token");
-        }else if(sysTokenMapper.selectCount(new QueryWrapper<SysToken>().eq("token_value",token))>0){
+        }else if(sysTokenRepository.countByTokenValue(token)>0){
             session.setAttribute("token",token);
             return Result.ok("token有效，登录成功");
         }else{

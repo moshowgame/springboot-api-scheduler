@@ -1,13 +1,13 @@
 package com.software.dev.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.software.dev.domain.*;
-import com.software.dev.mapper.UrlRequestTokenMapper;
-import com.software.dev.mapper.UrlResponseAssumptionMapper;
+import com.software.dev.repository.UrlRequestTokenRepository;
+import com.software.dev.repository.UrlResponseAssumptionRepository;
 import com.software.dev.service.UrlPlusService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +28,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UrlPlusController {
 
     @Autowired
-    private UrlRequestTokenMapper urlRequestTokenMapper;
+    private UrlRequestTokenRepository urlRequestTokenRepository;
     @Autowired
-    private UrlResponseAssumptionMapper urlResponseAssumptionMapper;
+    private UrlResponseAssumptionRepository urlResponseAssumptionRepository;
 
     @Autowired
     private UrlPlusService urlPlusService;
@@ -38,18 +38,21 @@ public class UrlPlusController {
     @PostMapping("/token/list")
     public Result tokenList(@RequestBody PageParam param){
         log.info("响应列表{}",JSON.toJSONString(param));
-        //自带分页
-        IPage<UrlRequestToken> iPage= urlRequestTokenMapper.selectPage(new Page<UrlRequestToken>(param.getPage(),param.getLimit()),
-                new QueryWrapper<UrlRequestToken>().eq("status",1).like(StringUtils.isNotBlank(param.getSearch()),"token_url",param.getSearch()).orderByDesc("request_id")
-        );
-        PageUtils page = new PageUtils(iPage.getRecords(), (int) iPage.getTotal(),param.getLimit(),param.getPage());
+        //JPA分页
+        Pageable pageable = PageRequest.of(param.getPage() - 1, param.getLimit());
+        org.springframework.data.domain.Page<UrlRequestToken> page;
+        if (StringUtils.isNotBlank(param.getSearch())) {
+            page = urlRequestTokenRepository.findByStatusAndTokenUrlContainingOrderByRequestIdDesc(1, param.getSearch(), pageable);
+        } else {
+            page = urlRequestTokenRepository.findByStatusOrderByRequestIdDesc(1, pageable);
+        }
+        PageUtils pageUtils = new PageUtils(page.getContent(), (int) page.getTotalElements(), param.getLimit(), param.getPage());
 
-        return Result.ok().put("page", page);
-//        return Result.ok(urlRequestTokenMapper.selectList(new QueryWrapper<UrlRequestToken>().eq("status","1")));
+        return Result.ok().put("page", pageUtils);
     }
     @PostMapping("/token/info")
     public Result tokenQuery(@RequestBody PageParam pageParam){
-        UrlRequestToken urlRequestToken=urlRequestTokenMapper.selectById(pageParam.getRequestId());
+        UrlRequestToken urlRequestToken=urlRequestTokenRepository.findById(pageParam.getRequestId()).orElse(null);
         if(urlRequestToken==null){
             return Result.error("找不到对应的token，新建一个吧");
         }else{
@@ -58,7 +61,7 @@ public class UrlPlusController {
     }
     @PostMapping("/assumption/info")
     public Result assumptionQuery(@RequestBody PageParam pageParam){
-        UrlResponseAssumption urlResponseAssumption=urlResponseAssumptionMapper.selectById(pageParam.getRequestId());
+        UrlResponseAssumption urlResponseAssumption=urlResponseAssumptionRepository.findById(pageParam.getRequestId()).orElse(null);
         if(urlResponseAssumption==null){
             return Result.error("找不到对应的assumption，新建一个吧");
         }else{
@@ -68,7 +71,7 @@ public class UrlPlusController {
 
     @PostMapping("/token/test")
     public Result tokenTest(@RequestBody PageParam pageParam){
-        UrlRequestToken urlRequestToken=urlRequestTokenMapper.selectById(pageParam.getRequestId());
+        UrlRequestToken urlRequestToken=urlRequestTokenRepository.findById(pageParam.getRequestId()).orElse(null);
         if(urlRequestToken==null){
             return Result.error("找不到对应的token");
         }else{
@@ -88,10 +91,10 @@ public class UrlPlusController {
         if(StringUtils.isAnyEmpty(urlRequestToken.getRequestId(),urlRequestToken.getParam(),urlRequestToken.getTokenUrl())){
             return Result.error("请完善信息后提交");
         }
-        if(urlRequestTokenMapper.selectById(urlRequestToken.getRequestId())!=null){
-            urlRequestTokenMapper.updateById(urlRequestToken);
+        if(urlRequestTokenRepository.existsById(urlRequestToken.getRequestId())){
+            urlRequestTokenRepository.save(urlRequestToken);
         }else{
-            urlRequestTokenMapper.insert(urlRequestToken);
+            urlRequestTokenRepository.save(urlRequestToken);
         }
         return Result.ok("TOKEN保存成功");
     }
@@ -101,10 +104,10 @@ public class UrlPlusController {
         if(StringUtils.isAnyEmpty(urlResponseAssumption.getRequestId(),urlResponseAssumption.getKeyFirst(),urlResponseAssumption.getValueFirst(),urlResponseAssumption.getValueElse())){
             return Result.error("请完善信息后提交");
         }
-        if(urlResponseAssumptionMapper.selectById(urlResponseAssumption.getRequestId())!=null){
-            urlResponseAssumptionMapper.updateById(urlResponseAssumption);
+        if(urlResponseAssumptionRepository.existsById(urlResponseAssumption.getRequestId())){
+            urlResponseAssumptionRepository.save(urlResponseAssumption);
         }else{
-            urlResponseAssumptionMapper.insert(urlResponseAssumption);
+            urlResponseAssumptionRepository.save(urlResponseAssumption);
         }
         return Result.ok("ASSUMPTION保存成功");
     }

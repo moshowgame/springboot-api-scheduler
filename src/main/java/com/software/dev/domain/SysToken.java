@@ -1,16 +1,19 @@
 package com.software.dev.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Data
+@Entity
+@Table(name = "sys_token")
 public class SysToken {
     /**
      * 请求id
      */
-    @TableId(type = IdType.AUTO)
-    Integer tokenId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer tokenId;
 
-    String tokenValue;
+    @Column(name = "token_value")
+    private String tokenValue;
 }

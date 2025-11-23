@@ -1,14 +1,13 @@
 package com.software.dev.job;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.software.dev.domain.UrlRequest;
 import com.software.dev.domain.UrlRequestToken;
 import com.software.dev.domain.UrlResponse;
 import com.software.dev.domain.UrlResponseAssumption;
-import com.software.dev.mapper.UrlRequestMapper;
-import com.software.dev.mapper.UrlRequestTokenMapper;
-import com.software.dev.mapper.UrlResponseAssumptionMapper;
-import com.software.dev.mapper.UrlResponseMapper;
+import com.software.dev.repository.UrlRequestRepository;
+import com.software.dev.repository.UrlRequestTokenRepository;
+import com.software.dev.repository.UrlResponseRepository;
+import com.software.dev.repository.UrlResponseAssumptionRepository;
 import com.software.dev.service.UrlPlusService;
 import com.software.dev.util.DateUtil;
 import com.software.dev.util.HttpUtil;
@@ -37,15 +36,15 @@ public class UrlJob  implements Job, Serializable {
     public static String DEFAULT_GROUP="DEFAULT";
 
     @Autowired
-    private UrlResponseMapper urlResponseMapper;
+    private UrlResponseRepository urlResponseRepository;
     @Autowired
-    private UrlRequestMapper urlRequestMapper;
+    private UrlRequestRepository urlRequestRepository;
     @Autowired
     private UrlPlusService urlPlusService;
     @Autowired
-    private UrlRequestTokenMapper urlRequestTokenMapper;
+    private UrlRequestTokenRepository urlRequestTokenRepository;
     @Autowired
-    private UrlResponseAssumptionMapper urlResponseAssumptionMapper;
+    private UrlResponseAssumptionRepository urlResponseAssumptionRepository;
 
 
     @Override
@@ -71,8 +70,8 @@ public class UrlJob  implements Job, Serializable {
         String responseMsg=null;
         //Url Request
         if(!StringUtils.isBlank(urlId)){
-            UrlRequest urlRequest=urlRequestMapper.selectOne(new QueryWrapper<UrlRequest>().eq("request_id",urlId));
-            UrlRequestToken urlRequestToken=urlRequestTokenMapper.selectById(urlId);
+            UrlRequest urlRequest=urlRequestRepository.findById(urlId).orElse(null);
+            UrlRequestToken urlRequestToken=urlRequestTokenRepository.findById(urlId).orElse(null);
             //成功找到请求id
             if(urlRequest!=null){
                 String requestUrl=urlRequest.getRequestUrl();
@@ -121,7 +120,7 @@ public class UrlJob  implements Job, Serializable {
                     urlResponse.setStatus(1);
                     urlResponse.setResponseText(responseMsg);
                     //URL PLUS之推断逻辑 by Moshow 2022-03-06
-                    UrlResponseAssumption urlResponseAssumption = urlResponseAssumptionMapper.selectOne(new QueryWrapper<UrlResponseAssumption>().eq("request_id",urlId));
+                    UrlResponseAssumption urlResponseAssumption = urlResponseAssumptionRepository.findById(urlId).orElse(null);
                     if(urlResponseAssumption!=null){
                         if(!StringUtils.isAllEmpty(responseMsg,urlResponseAssumption.getKeyFirst())&&responseMsg.contains(urlResponseAssumption.getKeyFirst())){
                             urlResponse.setAssumptionResult(urlResponseAssumption.getValueFirst());
@@ -141,7 +140,7 @@ public class UrlJob  implements Job, Serializable {
                 log.info("RESPONSE TEXT:"+responseMsg);
                 urlResponse.setResponseId(DateUtil.generateTimestampId());
                 urlResponse.setResponseTime(new Date());
-                urlResponseMapper.insert(urlResponse);
+                urlResponseRepository.save(urlResponse);
             }
         }
 

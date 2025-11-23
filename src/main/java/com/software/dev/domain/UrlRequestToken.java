@@ -1,8 +1,7 @@
 package com.software.dev.domain;
 import java.io.Serializable;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Date;
 import java.util.List;
@@ -12,18 +11,22 @@ import java.util.List;
  * @author 大狼狗 2019-04-28
  */
 @Data
+@Entity
+@Table(name = "url_request_token")
 public class UrlRequestToken implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
      * 请求id
      */
-    @TableId
+    @Id
+    @Column(name = "request_id")
     private String requestId;
 
     /**
      * TOKEN请求地址
      */
+    @Column(name = "token_url")
     private String tokenUrl;
 
     /**
@@ -38,21 +41,25 @@ public class UrlRequestToken implements Serializable {
     /**
      * 参数方式：1form表单 2json格式/xml
      */
+    @Column(name = "param_type")
     private String paramType;
 
     /**
      * 追加方式：1通过url追加 2通过form追加
      */
+    @Column(name = "append_type")
     private String appendType;
 
     /**
      * 追加参数key名
      */
+    @Column(name = "append_name")
     private String appendName;
 
     /**
      * TOKEN表达式
      */
+    @Column(name = "token_expression")
     private String tokenExpression;
 
     /**

@@ -2,8 +2,8 @@ package com.software.dev.controller;
 
 import com.software.dev.domain.QuartzEntity;
 import com.software.dev.domain.Result;
-import com.software.dev.mapper.QuartzEntityMapper;
-import com.software.dev.mapper.UrlRequestMapper;
+import com.software.dev.repository.QuartzEntityRepository;
+import com.software.dev.repository.UrlRequestRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -27,9 +27,9 @@ public class JobController {
     @Autowired
     private Scheduler scheduler;
     @Autowired
-    private QuartzEntityMapper quartzEntityMapper;
+    private QuartzEntityRepository quartzEntityRepository;
     @Autowired
-    private UrlRequestMapper urlRequestMapper;
+    private UrlRequestRepository urlRequestRepository;
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @PostMapping("/add")
@@ -68,7 +68,7 @@ public class JobController {
     public Result list(QuartzEntity quartz,Integer pageNo,Integer pageSize){
         log.info("任务列表");
         //List<QuartzEntity> list = quartzEntityMapper.selectList(null);
-        List<QuartzEntity> list = quartzEntityMapper.listQuartzEntity();
+        List<QuartzEntity> list = quartzEntityRepository.listQuartzEntity();
         return Result.ok(list);
     }
     @PostMapping("/trigger")

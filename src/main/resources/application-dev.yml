@@ -14,10 +14,6 @@ server:
     stop-timeout: 30000
     max-http-form-post-size: 200000
     max-http-header-size: 8192
-#mybatis-plus配置控制台打印完整带参数SQL语句
-mybatis-plus:
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 spring:
     banner:
       charset: UTF-8
@@ -40,6 +36,14 @@ spring:
 #          template_loader: templates
 #    mvc:
 #      static-path-pattern: /statics/**
+    jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
+          format_sql: true
     datasource:
       type: com.zaxxer.hikari.HikariDataSource
       driver-class-name: org.postgresql.Driver
@@ -64,36 +68,19 @@ spring:
         connection-timeout: 30000
         # 连接测试query
         connection-test-query: SELECT 1
-    quartz:
-      job-store-type: jdbc
-      jdbc:
-        initialize-schema: always
-      properties:
-        org.quartz.scheduler.instanceName: QuartzScheduler
-        org.quartz.scheduler.instanceId: AUTO
-        org.quartz.jobStore.class: org.quartz.impl.jdbcjobstore.JobStoreTX
-        org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
-        org.quartz.jobStore.tablePrefix: QRTZ_
-        org.quartz.jobStore.dataSource: dataSource   # 指向 Spring Boot 默认的 Hikari DataSource
-#        org:
-#          quartz:
-#            dataSource:
-#                quartz:
-#                  connectionProvider:
-#                    class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
-#            jobStore:
-#              dataSource: quartz
-#              class: org.quartz.impl.jdbcjobstore.JobStoreTX
-#              clusterCheckinInterval: 10000
-#              driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
-#              isClustered: true
-#              tablePrefix: QRTZ_
-#              useProperties: false
-#            scheduler:
-#              instanceId: AUTO
-#              instanceName: clusteredScheduler
-#            threadPool:
-#              class: org.quartz.simpl.SimpleThreadPool
-#              threadCount: 10
-#              threadPriority: 5
-#              threadsInheritContextClassLoaderOfInitializingThread: true
+      quartz:
+        scheduler:
+          instanceName: clusteredScheduler
+          instanceId: AUTO
+        jobStore:
+          class: org.quartz.impl.jdbcjobstore.JobStoreTX
+          driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+          tablePrefix: QRTZ_
+          isClustered: true
+          clusterCheckinInterval: 10000
+          useProperties: false
+        threadPool:
+          class: org.quartz.simpl.SimpleThreadPool
+          threadCount: 10
+          threadPriority: 5
+          threadsInheritContextClassLoaderOfInitializingThread: true
