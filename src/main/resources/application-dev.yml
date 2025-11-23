@@ -43,8 +43,9 @@ spring:
     datasource:
       type: com.zaxxer.hikari.HikariDataSource
       driver-class-name: org.postgresql.Driver
-      username: root
-      password: bfXa4Pt2lUUScy8jakXf
+      url: jdbc:postgresql://localhost:5432/quartz
+      username: postgres
+      password: root123
       # hikari连接池配置
       hikari:
         #连接池名
@@ -68,20 +69,31 @@ spring:
       jdbc:
         initialize-schema: always
       properties:
-        org:
-          quartz:
-            jobStore:
-              class: org.quartz.impl.jdbcjobstore.JobStoreTX
-              clusterCheckinInterval: 10000
-              driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
-              isClustered: true
-              tablePrefix: QRTZ_
-              useProperties: false
-            scheduler:
-              instanceId: AUTO
-              instanceName: clusteredScheduler
-            threadPool:
-              class: org.quartz.simpl.SimpleThreadPool
-              threadCount: 10
-              threadPriority: 5
-              threadsInheritContextClassLoaderOfInitializingThread: true
+        org.quartz.scheduler.instanceName: QuartzScheduler
+        org.quartz.scheduler.instanceId: AUTO
+        org.quartz.jobStore.class: org.quartz.impl.jdbcjobstore.JobStoreTX
+        org.quartz.jobStore.driverDelegateClass: org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+        org.quartz.jobStore.tablePrefix: QRTZ_
+        org.quartz.jobStore.dataSource: dataSource   # 指向 Spring Boot 默认的 Hikari DataSource
+#        org:
+#          quartz:
+#            dataSource:
+#                quartz:
+#                  connectionProvider:
+#                    class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
+#            jobStore:
+#              dataSource: quartz
+#              class: org.quartz.impl.jdbcjobstore.JobStoreTX
+#              clusterCheckinInterval: 10000
+#              driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+#              isClustered: true
+#              tablePrefix: QRTZ_
+#              useProperties: false
+#            scheduler:
+#              instanceId: AUTO
+#              instanceName: clusteredScheduler
+#            threadPool:
+#              class: org.quartz.simpl.SimpleThreadPool
+#              threadCount: 10
+#              threadPriority: 5
+#              threadsInheritContextClassLoaderOfInitializingThread: true

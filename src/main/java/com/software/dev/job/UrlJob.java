@@ -10,12 +10,15 @@ import com.software.dev.mapper.UrlRequestTokenMapper;
 import com.software.dev.mapper.UrlResponseAssumptionMapper;
 import com.software.dev.mapper.UrlResponseMapper;
 import com.software.dev.service.UrlPlusService;
+import com.software.dev.util.DateUtil;
+import com.software.dev.util.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -76,7 +79,12 @@ public class UrlJob  implements Job, Serializable {
                 log.info("URL REQUEST NAME: {} ",urlRequest.getRequestName());
                 //如果存在token，
                 if(urlRequestToken!=null&&urlRequestToken.getStatus()==1){
-                    String tokenStr=urlPlusService.getToken(urlRequestToken);
+                    String tokenStr= null;
+                    try {
+                        tokenStr = urlPlusService.getToken(urlRequestToken);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     log.info("URL REQUEST TOKEN: {}",tokenStr);
                     //处理URL追加类型（优先）
                     if(UrlRequestToken.AppendType.URL.equals(urlRequestToken.getAppendType())){
@@ -106,9 +114,9 @@ public class UrlJob  implements Job, Serializable {
                 //请求GET/POST
                 try{
                     if(UrlRequest.RequestMethod.GET.equals(urlRequest.getRequestMethod())){
-                        responseMsg = HttpUtil.get(requestUrl);
+                        responseMsg = HttpUtil.get(requestUrl,null,null);
                     }else if (UrlRequest.RequestMethod.POST.equals(urlRequest.getRequestMethod())){
-                        responseMsg = HttpUtil.post(requestUrl,"");
+                        responseMsg = HttpUtil.post(requestUrl,null,"");
                     }
                     urlResponse.setStatus(1);
                     urlResponse.setResponseText(responseMsg);
@@ -131,7 +139,7 @@ public class UrlJob  implements Job, Serializable {
                     urlResponse.setResponseText(e.getMessage());
                 }
                 log.info("RESPONSE TEXT:"+responseMsg);
-                urlResponse.setResponseId(IdUtil.fastUUID());
+                urlResponse.setResponseId(DateUtil.generateTimestampId());
                 urlResponse.setResponseTime(new Date());
                 urlResponseMapper.insert(urlResponse);
             }
