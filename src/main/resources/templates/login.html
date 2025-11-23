@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - API Scheduler</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .login-body {
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem;
+            font-weight: 500;
+        }
+        .btn-login:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .alert {
+            border-radius: 10px;
+        }
+        .spinner-border {
+            width: 1rem;
+            height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="login-container">
+            <div class="login-header">
+                <h3 class="mb-0">🚀 API Scheduler</h3>
+                <p class="mb-0 mt-2">轻量级任务调度系统</p>
+            </div>
+            <div class="login-body">
+                <form @submit.prevent="login">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名</label>
+                        <div class="input-group">
+                            <span class="input-group-text">👤</span>
+                            <input type="text" class="form-control" id="username" v-model="loginForm.username" 
+                                   placeholder="请输入用户名" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码</label>
+                        <div class="input-group">
+                            <span class="input-group-text">🔒</span>
+                            <input type="password" class="form-control" id="password" v-model="loginForm.password" 
+                                   placeholder="请输入密码" required>
+                        </div>
+                    </div>
+                    
+                    <div v-if="errorMessage" class="alert alert-danger" role="alert">
+                        <small>{{ errorMessage }}</small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-login" :disabled="loading">
+                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+                            {{ loading ? '登录中...' : '登录' }}
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        默认账号：admin / admin123
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    loginForm: {
+                        username: '',
+                        password: ''
+                    },
+                    loading: false,
+                    errorMessage: ''
+                }
+            },
+            methods: {
+                async login() {
+                    this.loading = true;
+                    this.errorMessage = '';
+                    
+                    try {
+                        const response = await axios.post('/api/auth/login', this.loginForm);
+                        
+                        if (response.data.success) {
+                            // 登录成功，跳转到主页
+                            window.location.href = '/';
+                        } else {
+                            this.errorMessage = response.data.message || '登录失败';
+                        }
+                    } catch (error) {
+                        console.error('登录错误:', error);
+                        if (error.response && error.response.data) {
+                            this.errorMessage = error.response.data.message || '登录失败';
+                        } else {
+                            this.errorMessage = '网络错误，请稍后重试';
+                        }
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            },
+            mounted() {
+                // 检查是否已经登录
+                axios.get('/api/auth/check').then(response => {
+                    if (response.data.authenticated) {
+                        window.location.href = '/';
+                    }
+                }).catch(() => {
+                    // 忽略检查错误
+                });
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

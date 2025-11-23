@@ -12,10 +12,14 @@
     <div id="app" class="container-fluid">
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid">
-                <a class="navbar-brand" href="#">API Scheduler</a>
+                <a class="navbar-brand" href="#">🚀 SpringBoot-API-Scheduler</a>
+                <div class="navbar-nav me-auto">
+                    <a class="nav-link" href="#" @click="showTasks">📋 任务管理</a>
+                    <a class="nav-link" href="#" @click="showLogs">📊 执行日志</a>
+                </div>
                 <div class="navbar-nav">
-                    <a class="nav-link" href="#" @click="showTasks">任务管理</a>
-                    <a class="nav-link" href="#" @click="showLogs">执行日志</a>
+                    <span class="navbar-text me-3">👤 {{ currentUser }}</span>
+                    <a class="nav-link" href="#" @click="logout">🚪 退出</a>
                 </div>
             </div>
         </nav>
@@ -268,10 +272,14 @@
                     currentLog: {},
                     editingTask: false,
                     taskModal: null,
-                    logDetailModal: null
+                    logDetailModal: null,
+                    currentUser: ''
                 };
             },
             mounted() {
+                // 检查登录状态
+                this.checkAuth();
+                
                 this.taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
                 this.logDetailModal = new bootstrap.Modal(document.getElementById('logDetailModal'));
                 this.loadTasks();
@@ -384,6 +392,28 @@
                 },
                 setCronExpression(expression) {
                     this.currentTask.cronExpression = expression;
+                },
+                async checkAuth() {
+                    try {
+                        const response = await axios.get('/api/auth/check');
+                        if (response.data.authenticated) {
+                            this.currentUser = response.data.username;
+                        } else {
+                            window.location.href = '/login';
+                        }
+                    } catch (error) {
+                        console.error('Auth check failed:', error);
+                        window.location.href = '/login';
+                    }
+                },
+                async logout() {
+                    try {
+                        await axios.post('/api/auth/logout');
+                        window.location.href = '/login';
+                    } catch (error) {
+                        console.error('Logout failed:', error);
+                        window.location.href = '/login';
+                    }
                 }
             }
         }).mount('#app');

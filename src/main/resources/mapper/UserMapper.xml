@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.software.dev.mapper.UserMapper">
+    
+    <resultMap id="UserResult" type="com.software.dev.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="enabled" column="enabled"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="findByUsername" parameterType="String" resultMap="UserResult">
+        SELECT * FROM sys_user WHERE username = #{username}
+    </select>
+
+    <insert id="insert" parameterType="com.software.dev.entity.User">
+        INSERT INTO sys_user (id, username, password, enabled, create_time, update_time)
+        VALUES (#{id}, #{username}, #{password}, #{enabled}, #{createTime}, #{updateTime})
+    </insert>
+
+    <update id="update" parameterType="com.software.dev.entity.User">
+        UPDATE sys_user SET
+            username = #{username},
+            password = #{password},
+            enabled = #{enabled},
+            update_time = #{updateTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+        DELETE FROM sys_user WHERE id = #{id}
+    </delete>
+</mapper>
