@@ -106,25 +106,7 @@ public class UrlTaskController {
         }
         return Result.ok();
     }
-    @Deprecated
-    @PostMapping("/request/resume")
-    public  Result resume(String requestId) {
-        log.info("恢复任务:"+ requestId);
-        try {
-            JobKey key = new JobKey(requestId,UrlJob.DEFAULT_GROUP);
-            scheduler.resumeJob(key);
-            //修改对应状态
-            UrlRequest urlRequest=urlRequestRepository.findById(requestId).orElse(null);
-            if(urlRequest!=null) {
-                urlRequest.setStatus(UrlRequest.RequestStatus.START);
-                urlRequestRepository.save(urlRequest);
-            }
-        } catch (SchedulerException e) {
-            e.printStackTrace();
-            return Result.error(e.getMessage());
-        }
-        return Result.ok();
-    }
+
     public  Result remove(String requestId) {
         log.info("移除任务:"+requestId);
         try {
@@ -167,41 +149,66 @@ public class UrlTaskController {
     }
     @PostMapping("/request/start")
     public Result start(String requestId){
-        log.info("启动任务:"+requestId);
+        log.info("启动/恢复任务:"+requestId);
         UrlRequest urlRequest=urlRequestRepository.findById(requestId).orElse(null);
-        if(urlRequest!=null){
-            try {
-                log.info("确认是否有旧任务，删除重新添加");
-                JobKey key = new JobKey(urlRequest.getRequestId().toString(), UrlJob.DEFAULT_GROUP);
-                if(scheduler.checkExists(key)){
-                    //如果存在旧的，删除重新添加
-                    scheduler.deleteJob(key);
+        if(urlRequest==null){
+            return Result.error("任务不存在");
+        }
+        
+        try {
+            JobKey key = new JobKey(urlRequest.getRequestId(), UrlJob.DEFAULT_GROUP);
+            
+            if(scheduler.checkExists(key)){
+                //任务存在，检查状态
+                JobDetail jobDetail = scheduler.getJobDetail(key);
+                if(jobDetail != null) {
+                    //检查任务是否被暂停，如果是则恢复
+                    TriggerKey triggerKey = TriggerKey.triggerKey(urlRequest.getRequestId().toString(), UrlJob.DEFAULT_GROUP);
+                    if(scheduler.getTriggerState(triggerKey) == Trigger.TriggerState.PAUSED){
+                        log.info("任务已暂停，正在恢复...");
+                        scheduler.resumeJob(key);
+                    } else {
+                        log.info("任务已存在且正常运行");
+                    }
                 }
-                Class cls = Class.forName(UrlJob.class.getName()) ;
+            } else {
+                //任务不存在，创建新任务
+                log.info("任务不存在，正在创建新任务...");
+                Class cls = Class.forName(UrlJob.class.getName());
                 cls.newInstance();
+                
                 //构建job信息
-                JobDetail job = JobBuilder.newJob(cls).withIdentity(urlRequest.getRequestId().toString(),
-                        UrlJob.DEFAULT_GROUP)
-                        .withDescription(urlRequest.getRequestName()).build();
+                JobDetail job = JobBuilder.newJob(cls)
+                        .withIdentity(urlRequest.getRequestId().toString(), UrlJob.DEFAULT_GROUP)
+                        .withDescription(urlRequest.getRequestName())
+                        .build();
 
                 //这里传入id作为处理
                 job.getJobDataMap().put("requestId", requestId);
-                log.info("开始触发新任务");
+                
                 // 触发时间点
                 CronScheduleBuilder cronScheduleBuilder = CronScheduleBuilder.cronSchedule(urlRequest.getRequestCron());
-                Trigger trigger = TriggerBuilder.newTrigger().withIdentity(urlRequest.getRequestId().toString(),UrlJob.DEFAULT_GROUP)
-                        .startNow().withSchedule(cronScheduleBuilder).build();
+                Trigger trigger = TriggerBuilder.newTrigger()
+                        .withIdentity(urlRequest.getRequestId(), UrlJob.DEFAULT_GROUP)
+                        .startNow()
+                        .withSchedule(cronScheduleBuilder)
+                        .build();
+                
                 //交由Scheduler安排触发
                 scheduler.scheduleJob(job, trigger);
-                //修改对应状态
-                urlRequest.setStatus(UrlRequest.RequestStatus.START);
-                urlRequestRepository.save(urlRequest);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return Result.error(e.getMessage());
+                log.info("新任务创建成功");
             }
+            
+            //修改对应状态
+            urlRequest.setStatus(UrlRequest.RequestStatus.START);
+            urlRequestRepository.save(urlRequest);
+            
+        } catch (Exception e) {
+            log.error("启动/恢复任务失败", e);
+            return Result.error("启动/恢复任务失败: " + e.getMessage());
         }
-        return Result.ok();
+        
+        return Result.ok("任务启动成功");
     }
     @PostMapping("/insertN")
     public  Result insertX(@RequestParam Integer n) {
