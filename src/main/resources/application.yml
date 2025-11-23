@@ -1,3 +1,36 @@
+server:
+  port: 8080
+
 spring:
-  profiles:
-    active: dev
+  application:
+    name: api-scheduler
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/api_scheduler
+    username: postgres
+    password: root123
+    driver-class-name: org.postgresql.Driver
+  
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+    servlet:
+      content-type: text/html
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.software.dev.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+logging:
+  level:
+    com.software.dev: DEBUG
+    org.springframework.scheduling: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/api-scheduler.log
