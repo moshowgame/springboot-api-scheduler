@@ -37,8 +37,8 @@ spring:
 #    mvc:
 #      static-path-pattern: /statics/**
     jpa:
-      hibernate:
-        ddl-auto: update
+#      hibernate:
+#        ddl-auto: update
       show-sql: true
       properties:
         hibernate:

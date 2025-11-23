@@ -20,6 +20,8 @@ public class DemoController {
         log.info("username:{},password:{}",username,password);
         Map<String,String> resultMap = new HashMap<>(2);
         resultMap.put("token",defaultToken);
+        resultMap.put("username",username);
+        resultMap.put("password",password);
         return Result.ok(resultMap);
     }
 

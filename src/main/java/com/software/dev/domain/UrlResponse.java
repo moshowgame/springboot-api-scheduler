@@ -22,7 +22,6 @@ public class UrlResponse implements Serializable {
      * 响应id
      */
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "response_id")
     private String responseId;
 
