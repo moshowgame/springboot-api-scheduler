@@ -1,5 +1,5 @@
 ![image](https://img.shields.io/badge/springboot3-%E2%98%85%E2%98%85%E2%98%85%E2%98%85%E2%98%85-brightgreen.svg)
-[![Build Status](https://api.travis-ci.org/moshowgame/springboot-api-scheduler.svg?branch=master)](https://api.travis-ci.org/moshowgame/springboot-api-scheduler.svg)
+![Build Status](https://app.travis-ci.com/moshowgame/springboot-api-scheduler.svg?token=vBv6iET1PTJJR7xKxC2o&branch=master)
 
 # SpringBoot-API-Scheduler
 又叫`EasyApiTaskScheduler`，一个基于SpringBoot的API任务调度系统，支持定时执行HTTP请求并记录响应日志。
@@ -11,6 +11,10 @@
 🤔如果你只是需要定时调度一个API任务，却要安装配置XXL-JOB、Quartz等重量级框架？  
 😄**No! 现在有了更加简单易用、轻量级的解决方案！**
 ➡️**SpringBoot-API-Scheduler** 专为API调度而生，开箱即用，零学习成本！
+
+<img src="{0CBBE51F-9282-42B8-8A02-2A33E3DB87DD}.png" alt="LIST" width="600"/><br>
+<img src="{68776847-753E-412B-B899-1DC7622D354E}.png" alt="LOG" width="600"/><br>
+<img src="{54583E38-DE3C-452A-BC5B-DEBDB2915411}.png" alt="EDIT" width="200"/><br>
 
 # 🏆Author作者
 Powered by Moshow郑锴 , Show more on CSDN https://zhengkai.blog.csdn.net/ | 公众号【软件开发大百科】
