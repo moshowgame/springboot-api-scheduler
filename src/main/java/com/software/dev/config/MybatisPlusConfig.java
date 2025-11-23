@@ -1,6 +1,7 @@
 package com.software.dev.config;
 
 import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -9,6 +10,7 @@ import javax.sql.DataSource;
 
 @Configuration
 @Import(MybatisPlusAutoConfiguration.class)
+@MapperScan("com.software.dev.mapper")
 public class MybatisPlusConfig {
     
     /**
