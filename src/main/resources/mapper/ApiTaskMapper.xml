@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.software.dev.mapper.ApiTaskMapper">
+    
+    <resultMap id="ApiTaskResult" type="com.software.dev.entity.ApiTask">
+        <id property="id" column="id"/>
+        <result property="taskName" column="task_name"/>
+        <result property="url" column="url"/>
+        <result property="method" column="method"/>
+        <result property="timeout" column="timeout"/>
+        <result property="headers" column="headers"/>
+        <result property="parameters" column="parameters"/>
+        <result property="cronExpression" column="cron_expression"/>
+        <result property="status" column="status"/>
+        <result property="description" column="description"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="lastExecuteTime" column="last_execute_time"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="ApiTaskResult">
+        SELECT * FROM api_task ORDER BY create_time DESC
+    </select>
+
+    <select id="findById" parameterType="String" resultMap="ApiTaskResult">
+        SELECT * FROM api_task WHERE id = #{id}
+    </select>
+
+    <select id="findByStatus" parameterType="String" resultMap="ApiTaskResult">
+        SELECT * FROM api_task WHERE status = #{status} ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" parameterType="com.software.dev.entity.ApiTask">
+        INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time)
+        VALUES (#{id}, #{taskName}, #{url}, #{method}, #{timeout}, #{headers}, #{parameters}, #{cronExpression}, #{status}, #{description}, NOW(), NOW())
+    </insert>
+
+    <update id="update" parameterType="com.software.dev.entity.ApiTask">
+        UPDATE api_task 
+        SET task_name = #{taskName}, 
+            url = #{url}, 
+            method = #{method}, 
+            timeout = #{timeout}, 
+            headers = #{headers}, 
+            parameters = #{parameters}, 
+            cron_expression = #{cronExpression}, 
+            status = #{status}, 
+            description = #{description}, 
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+        DELETE FROM api_task WHERE id = #{id}
+    </delete>
+
+</mapper>

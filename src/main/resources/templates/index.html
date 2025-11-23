@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Scheduler</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app" class="container-fluid">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">API Scheduler</a>
+                <div class="navbar-nav">
+                    <a class="nav-link" href="#" @click="showTasks">任务管理</a>
+                    <a class="nav-link" href="#" @click="showLogs">执行日志</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- 任务管理页面 -->
+        <div v-if="currentView === 'tasks'" class="mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5>API任务管理</h5>
+                            <button class="btn btn-primary" @click="showAddTaskModal">添加任务</button>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>任务名称</th>
+                                        <th>URL</th>
+                                        <th>方法</th>
+                                        <th>Cron表达式</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="task in tasks" :key="task.id">
+                                        <td>{{ task.id }}</td>
+                                        <td>{{ task.taskName }}</td>
+                                        <td>{{ task.url }}</td>
+                                        <td>{{ task.method }}</td>
+                                        <td>{{ task.cronExpression }}</td>
+                                        <td>
+                                            <span :class="getStatusClass(task.status)">{{ task.status }}</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" @click="startTask(task.id)" v-if="task.status === 'PAUSED'">启动</button>
+                                            <button class="btn btn-sm btn-warning" @click="pauseTask(task.id)" v-if="task.status === 'RUNNING'">暂停</button>
+                                            <button class="btn btn-sm btn-info" @click="executeTask(task.id)">执行</button>
+                                            <button class="btn btn-sm btn-secondary" @click="editTask(task)">编辑</button>
+                                            <button class="btn btn-sm btn-danger" @click="deleteTask(task.id)">删除</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 执行日志页面 -->
+        <div v-if="currentView === 'logs'" class="mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>执行日志</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>任务ID</th>
+                                        <th>请求URL</th>
+                                        <th>方法</th>
+                                        <th>响应码</th>
+                                        <th>响应时间(ms)</th>
+                                        <th>状态</th>
+                                        <th>执行时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="log in logs" :key="log.id">
+                                        <td>{{ log.id }}</td>
+                                        <td>{{ log.taskId }}</td>
+                                        <td>{{ log.requestUrl }}</td>
+                                        <td>{{ log.requestMethod }}</td>
+                                        <td>{{ log.responseCode }}</td>
+                                        <td>{{ log.responseTime }}</td>
+                                        <td>
+                                            <span :class="getStatusClass(log.status)">{{ log.status }}</span>
+                                        </td>
+                                        <td>{{ formatDateTime(log.executeTime) }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-info" @click="viewLogDetail(log)">详情</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加/编辑任务模态框 -->
+        <div class="modal fade" id="taskModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ editingTask ? '编辑任务' : '添加任务' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">任务名称</label>
+                                <input type="text" class="form-control" v-model="currentTask.taskName">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">URL</label>
+                                <input type="text" class="form-control" v-model="currentTask.url">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">方法</label>
+                                <select class="form-select" v-model="currentTask.method">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">超时时间(ms)</label>
+                                <input type="number" class="form-control" v-model="currentTask.timeout">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Cron表达式</label>
+                                <input type="text" class="form-control" v-model="currentTask.cronExpression" 
+                                       placeholder="例如: 0 */5 * * * ? (每5分钟执行一次)">
+                                <div class="mt-2">
+                                    <small class="text-muted">常用Cron表达式示例：</small>
+                                    <div class="row mt-2">
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1 mb-1" 
+                                                    @click="setCronExpression('0 */1 * * * ?')">每1分钟</button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1 mb-1" 
+                                                    @click="setCronExpression('0 */5 * * * ?')">每5分钟</button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1 mb-1" 
+                                                    @click="setCronExpression('0 */10 * * * ?')">每10分钟</button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1 mb-1" 
+                                                    @click="setCronExpression('0 */30 * * * ?')">每30分钟</button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1 mb-1" 
+                                                    @click="setCronExpression('0 0 * * * ?')">每小时</button>
+                                            <button type="button" class="btn btn-sm btn-outline-primary me-1 mb-1" 
+                                                    @click="setCronExpression('0 0 */2 * * ?')">每2小时</button>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1 mb-1" 
+                                                    @click="setCronExpression('0 0 0 * * ?')">每天凌晨</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1 mb-1" 
+                                                    @click="setCronExpression('0 30 8 * * ?')">每天8:30</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1 mb-1" 
+                                                    @click="setCronExpression('0 0 9 * * MON')">每周一9点</button>
+                                            <button type="button" class="btn btn-sm btn-outline-success me-1 mb-1" 
+                                                    @click="setCronExpression('0 0 1 * * ?')">每月1号</button>
+                                            <button type="button" class="btn btn-sm btn-outline-info me-1 mb-1" 
+                                                    @click="setCronExpression('0 0 9 ? * MON-FRI')">工作日9点</button>
+                                            <button type="button" class="btn btn-sm btn-outline-info me-1 mb-1" 
+                                                    @click="setCronExpression('0 0 10 ? * SAT,SUN')">周末10点</button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">格式说明：秒 分 时 日 月 周 [年]</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Headers (JSON格式)</label>
+                                <textarea class="form-control" v-model="currentTask.headers" rows="3"
+                                          placeholder='{"Content-Type": "application/json"}'></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Parameters (JSON格式)</label>
+                                <textarea class="form-control" v-model="currentTask.parameters" rows="3"
+                                          placeholder='{"key": "value"}'></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">描述</label>
+                                <textarea class="form-control" v-model="currentTask.description" rows="2"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" @click="saveTask">保存</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日志详情模态框 -->
+        <div class="modal fade" id="logDetailModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">日志详情</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div v-if="currentLog">
+                            <div class="mb-3">
+                                <label class="form-label">请求URL</label>
+                                <input type="text" class="form-control" :value="currentLog.requestUrl" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">请求方法</label>
+                                <input type="text" class="form-control" :value="currentLog.requestMethod" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">请求Headers</label>
+                                <textarea class="form-control" v-model="currentLog.requestHeaders" rows="3" readonly></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">请求参数</label>
+                                <textarea class="form-control" v-model="currentLog.requestParams" rows="3" readonly></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">响应码</label>
+                                <input type="text" class="form-control" :value="currentLog.responseCode" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">响应体</label>
+                                <textarea class="form-control" v-model="currentLog.responseBody" rows="10" readonly></textarea>
+                            </div>
+                            <div v-if="currentLog.errorMessage" class="mb-3">
+                                <label class="form-label">错误信息</label>
+                                <textarea class="form-control" v-model="currentLog.errorMessage" rows="3" readonly></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    currentView: 'tasks',
+                    tasks: [],
+                    logs: [],
+                    currentTask: {},
+                    currentLog: {},
+                    editingTask: false,
+                    taskModal: null,
+                    logDetailModal: null
+                };
+            },
+            mounted() {
+                this.taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
+                this.logDetailModal = new bootstrap.Modal(document.getElementById('logDetailModal'));
+                this.loadTasks();
+                this.loadLogs();
+            },
+            methods: {
+                showTasks() {
+                    this.currentView = 'tasks';
+                },
+                showLogs() {
+                    this.currentView = 'logs';
+                    this.loadLogs();
+                },
+                async loadTasks() {
+                    try {
+                        const response = await axios.get('/api/tasks');
+                        this.tasks = response.data.data;
+                    } catch (error) {
+                        console.error('Failed to load tasks:', error);
+                    }
+                },
+                async loadLogs() {
+                    try {
+                        const response = await axios.get('/api/responses');
+                        this.logs = response.data.data;
+                    } catch (error) {
+                        console.error('Failed to load logs:', error);
+                    }
+                },
+                showAddTaskModal() {
+                    this.editingTask = false;
+                    this.currentTask = {
+                        taskName: '',
+                        url: '',
+                        method: 'GET',
+                        timeout: 30000,
+                        cronExpression: '',
+                        headers: '',
+                        parameters: '',
+                        description: ''
+                    };
+                    this.taskModal.show();
+                },
+                editTask(task) {
+                    this.editingTask = true;
+                    this.currentTask = { ...task };
+                    this.taskModal.show();
+                },
+                async saveTask() {
+                    try {
+                        if (this.editingTask) {
+                            await axios.put(`/api/tasks/${this.currentTask.id}`, this.currentTask);
+                        } else {
+                            await axios.post('/api/tasks', this.currentTask);
+                        }
+                        this.taskModal.hide();
+                        this.loadTasks();
+                    } catch (error) {
+                        console.error('Failed to save task:', error);
+                    }
+                },
+                async deleteTask(id) {
+                    if (confirm('确定要删除这个任务吗？')) {
+                        try {
+                            await axios.delete(`/api/tasks/${id}`);
+                            this.loadTasks();
+                        } catch (error) {
+                            console.error('Failed to delete task:', error);
+                        }
+                    }
+                },
+                async startTask(id) {
+                    try {
+                        await axios.post(`/api/tasks/${id}/start`);
+                        this.loadTasks();
+                    } catch (error) {
+                        console.error('Failed to start task:', error);
+                    }
+                },
+                async pauseTask(id) {
+                    try {
+                        await axios.post(`/api/tasks/${id}/pause`);
+                        this.loadTasks();
+                    } catch (error) {
+                        console.error('Failed to pause task:', error);
+                    }
+                },
+                async executeTask(id) {
+                    try {
+                        await axios.post(`/api/tasks/${id}/execute`);
+                        alert('任务已提交执行');
+                    } catch (error) {
+                        console.error('Failed to execute task:', error);
+                    }
+                },
+                viewLogDetail(log) {
+                    this.currentLog = log;
+                    this.logDetailModal.show();
+                },
+                getStatusClass(status) {
+                    return {
+                        'badge bg-success': status === 'RUNNING' || status === 'SUCCESS',
+                        'badge bg-warning': status === 'PAUSED',
+                        'badge bg-danger': status === 'ERROR'
+                    };
+                },
+                formatDateTime(dateTime) {
+                    if (!dateTime) return '';
+                    return new Date(dateTime).toLocaleString();
+                },
+                setCronExpression(expression) {
+                    this.currentTask.cronExpression = expression;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
