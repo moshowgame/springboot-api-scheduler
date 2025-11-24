@@ -29,25 +29,70 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5>API任务管理</h5>
-                            <button class="btn btn-primary" @click="showAddTaskModal">添加任务</button>
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>API任务管理</h5>
+                                <div>
+                                    <button class="btn btn-warning me-2" @click="showAlertConfigModal">
+                                        <i class="bi bi-bell"></i> 警报配置
+                                    </button>
+                                    <button class="btn btn-primary" @click="showAddTaskModal">添加任务</button>
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="selectAllTasks" 
+                                               @change="toggleSelectAll" :checked="allTasksSelected">
+                                        <label class="form-check-label" for="selectAllTasks">
+                                            全选
+                                        </label>
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                @click="batchStartTasks" :disabled="!selectedTasks || selectedTasks.length === 0">
+                                            批量启动
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning btn-sm" 
+                                                @click="batchPauseTasks" :disabled="!selectedTasks || selectedTasks.length === 0">
+                                            批量暂停
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info btn-sm" 
+                                                @click="batchEnableAlerts" :disabled="!selectedTasks || selectedTasks.length === 0">
+                                            启用警报
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" 
+                                                @click="batchDisableAlerts" :disabled="!selectedTasks || selectedTasks.length === 0">
+                                            禁用警报
+                                        </button>
+                                    </div>
+                                    <span class="ms-3 text-muted" v-if="selectedTasks && selectedTasks.length > 0">
+                                        已选择 {{ selectedTasks.length }} 个任务
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
+                                        <th style="width: 40px;">选择</th>
                                         <th>ID</th>
                                         <th>任务名称</th>
                                         <th>URL</th>
                                         <th>方法</th>
                                         <th>Cron表达式</th>
                                         <th>状态</th>
+                                        <th>警报</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="task in tasks" :key="task.id">
+                                        <td>
+                                            <input class="form-check-input" type="checkbox" 
+                                                   :value="task.id" v-model="selectedTasks">
+                                        </td>
                                         <td>{{ task.id }}</td>
                                         <td>{{ task.taskName }}</td>
                                         <td>{{ task.url }}</td>
@@ -55,6 +100,10 @@
                                         <td>{{ task.cronExpression }}</td>
                                         <td>
                                             <span :class="getStatusClass(task.status)">{{ task.status }}</span>
+                                        </td>
+                                        <td>
+                                            <span v-if="task.alertEnabled" class="badge bg-success">已启用</span>
+                                            <span v-else class="badge bg-secondary">已禁用</span>
                                         </td>
                                         <td>
                                             <button class="btn btn-sm btn-success" @click="startTask(task.id)" v-if="task.status === 'PAUSED'">启动</button>
@@ -369,6 +418,91 @@
             </div>
         </div>
 
+        <!-- 警报配置模态框 -->
+        <div class="modal fade" id="alertConfigModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">错误警报配置</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">警报功能说明</h6>
+                            <p>当任务在指定时间内的断言失败率超过阈值时，系统将自动发送HTTP请求到您配置的API地址。</p>
+                            <ul>
+                                <li>时间窗口：检查过去1小时内的执行记录</li>
+                                <li>失败率计算：失败次数 / 总执行次数 × 100%</li>
+                                <li>触发条件：失败率超过设定的阈值</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">失败率阈值 (%)</label>
+                                    <input type="number" class="form-control" v-model="alertConfig.failureRateThreshold" 
+                                           min="1" max="100" placeholder="例如: 50">
+                                    <div class="form-text">当失败率超过此值时触发警报</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">检查间隔 (分钟)</label>
+                                    <input type="number" class="form-control" v-model="alertConfig.checkInterval" 
+                                           min="5" max="1440" placeholder="例如: 30">
+                                    <div class="form-text">系统检查警报的频率</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">警报API地址</label>
+                            <input type="text" class="form-control" v-model="alertConfig.apiUrl" 
+                                   placeholder="例如: https://api.example.com/alert">
+                            <div class="form-text">警报触发时调用的API地址</div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">请求方法</label>
+                                    <select class="form-select" v-model="alertConfig.httpMethod">
+                                        <option value="GET">GET</option>
+                                        <option value="POST">POST</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">请求头 (JSON格式)</label>
+                                    <textarea class="form-control" v-model="alertConfig.headers" rows="2"
+                                              placeholder='{"Content-Type": "application/json"}'></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">请求体 (JSON格式)</label>
+                            <textarea class="form-control" v-model="alertConfig.body" rows="3"
+                                      placeholder='{"message": "API任务断言失败率过高", "taskId": "${taskId}", "failureRate": "${failureRate}%"}'></textarea>
+                            <div class="form-text">可使用变量: ${taskId}, ${taskName}, ${failureRate}, ${failureCount}, ${totalCount}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" v-model="alertConfig.enabled">
+                                <label class="form-check-label">启用警报功能</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" @click="saveAlertConfig">保存配置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -385,6 +519,7 @@
                     allTasks: [], // 用于日志筛选的任务列表
                     filteredLogs: [], // 筛选后的日志
                     selectedTaskId: '', // 当前选中的任务ID
+                    selectedTasks: [], // 批量选中的任务ID列表
                     currentTask: {},
                     currentLog: {},
                     currentAssertion: {
@@ -393,9 +528,20 @@
                     },
                     currentConfigTask: {},
                     editingTask: false,
+                    // 警报配置相关
+                    alertConfig: {
+                        failureRateThreshold: 50, // 失败率阈值(%)
+                        checkInterval: 30, // 检查间隔(分钟)
+                        apiUrl: '', // 警报API地址
+                        httpMethod: 'POST', // 请求方法
+                        headers: '{"Content-Type": "application/json"}', // 请求头
+                        body: '{"message": "API任务断言失败率过高", "taskId": "${taskId}", "taskName": "${taskName}", "failureRate": "${failureRate}%"}', // 请求体
+                        enabled: false // 是否启用
+                    },
                     taskModal: null,
                     logDetailModal: null,
                     assertionConfigModal: null,
+                    alertConfigModal: null,
                     currentUser: ''
                 };
             },
@@ -406,6 +552,7 @@
                 this.taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
                 this.logDetailModal = new bootstrap.Modal(document.getElementById('logDetailModal'));
                 this.assertionConfigModal = new bootstrap.Modal(document.getElementById('assertionConfigModal'));
+                this.alertConfigModal = new bootstrap.Modal(document.getElementById('alertConfigModal'));
                 this.loadTasks();
                 this.loadLogs();
             },
@@ -715,6 +862,106 @@
                     } catch (error) {
                         console.error('Failed to save assertions:', error);
                         alert('保存断言失败: ' + (error.response?.data?.message || error.message));
+                    }
+                },
+                // 警报配置相关方法
+                showAlertConfigModal() {
+                    this.alertConfigModal.show();
+                },
+                async saveAlertConfig() {
+                    try {
+                        // 验证配置
+                        if (!this.alertConfig.failureRateThreshold || this.alertConfig.failureRateThreshold <= 0 || this.alertConfig.failureRateThreshold > 100) {
+                            alert('请输入有效的失败率阈值(1-100)');
+                            return;
+                        }
+                        
+                        if (!this.alertConfig.checkInterval || this.alertConfig.checkInterval < 5 || this.alertConfig.checkInterval > 1440) {
+                            alert('请输入有效的检查间隔(5-1440分钟)');
+                            return;
+                        }
+                        
+                        if (!this.alertConfig.apiUrl) {
+                            alert('请输入警报API地址');
+                            return;
+                        }
+                        
+                        // 保存配置到后端
+                        await axios.post('/api/alert/config', this.alertConfig);
+                        
+                        this.alertConfigModal.hide();
+                        alert('警报配置已保存');
+                    } catch (error) {
+                        console.error('Failed to save alert config:', error);
+                        alert('保存警报配置失败: ' + (error.response?.data?.message || error.message));
+                    }
+                },
+                // 批量操作相关方法
+                toggleSelectAll() {
+                    if (this.allTasksSelected) {
+                        this.selectedTasks = [];
+                    } else {
+                        this.selectedTasks = this.tasks.map(task => task.id);
+                    }
+                },
+                get allTasksSelected() {
+                    return this.tasks && this.tasks.length > 0 && 
+                           this.selectedTasks && this.selectedTasks.length === this.tasks.length;
+                },
+                async batchStartTasks() {
+                    try {
+                        const selectedCount = this.selectedTasks.length;
+                        for (const taskId of this.selectedTasks) {
+                            await axios.post(`/api/tasks/${taskId}/start`);
+                        }
+                        this.selectedTasks = [];
+                        this.loadTasks();
+                        alert(`已启动 ${selectedCount} 个任务`);
+                    } catch (error) {
+                        console.error('Failed to start tasks:', error);
+                        alert('批量启动任务失败');
+                    }
+                },
+                async batchPauseTasks() {
+                    try {
+                        const selectedCount = this.selectedTasks.length;
+                        for (const taskId of this.selectedTasks) {
+                            await axios.post(`/api/tasks/${taskId}/pause`);
+                        }
+                        this.selectedTasks = [];
+                        this.loadTasks();
+                        alert(`已暂停 ${selectedCount} 个任务`);
+                    } catch (error) {
+                        console.error('Failed to pause tasks:', error);
+                        alert('批量暂停任务失败');
+                    }
+                },
+                async batchEnableAlerts() {
+                    try {
+                        const selectedCount = this.selectedTasks.length;
+                        for (const taskId of this.selectedTasks) {
+                            await axios.post(`/api/alert/enable/${taskId}`);
+                        }
+                        this.selectedTasks = [];
+                        this.loadTasks();
+                        alert(`已为 ${selectedCount} 个任务启用警报`);
+                    } catch (error) {
+                        console.error('Failed to enable alerts:', error);
+                        alert('批量启用警报失败');
+                    }
+                },
+                async batchDisableAlerts() {
+                    try {
+                        const selectedCount = this.selectedTasks.length;
+                        for (const taskId of this.selectedTasks) {
+                            await axios.post(`/api/alert/disable/${taskId}`);
+                        }
+                        this.selectedTasks = [];
+                        this.loadTasks();
+                        alert(`已为 ${selectedCount} 个任务禁用警报`);
+                    } catch (error) {
+                        console.error('Failed to disable alerts:', error);
+                        alert('批量禁用警报失败');
                     }
                 }
             }
