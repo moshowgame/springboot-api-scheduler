@@ -127,10 +127,31 @@
                                         <td>
                                             <span :class="getStatusClass(log.status)">{{ log.status }}</span>
                                         </td>
-                                        <td>
-                                            <span v-if="log.assertionResult" :class="getAssertionClass(log.allAssertionsPassed)">
-                                                {{ log.assertionResult }}
-                                            </span>
+                                        <td style="max-width: 250px;">
+                                            <div v-if="log.assertionResult" :class="getAssertionClass(log.allAssertionsPassed)">
+                                                <div v-if="log.assertionResult.length <= 50" 
+                                                     style="word-break: break-all; line-height: 1.4;">
+                                                    {{ log.assertionResult }}
+                                                </div>
+                                                <div v-else>
+                                                    <div v-if="!log.expandedAssertion" 
+                                                         style="word-break: break-all; line-height: 1.4;">
+                                                        {{ log.assertionResult.substring(0, 50) }}...
+                                                        <a href="#" @click.prevent="toggleAssertionExpanded(log)" 
+                                                           class="text-decoration-none ms-1">
+                                                            <small>展开</small>
+                                                        </a>
+                                                    </div>
+                                                    <div v-else 
+                                                         style="word-break: break-all; line-height: 1.4;">
+                                                        {{ log.assertionResult }}
+                                                        <a href="#" @click.prevent="toggleAssertionExpanded(log)" 
+                                                           class="text-decoration-none ms-1">
+                                                            <small>收起</small>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <span v-else class="text-muted">无断言</span>
                                         </td>
                                         <td>{{ formatDateTime(log.executeTime) }}</td>
@@ -283,7 +304,6 @@
                                 <div class="alert" :class="currentLog.allAssertionsPassed ? 'alert-success' : 'alert-danger'">
                                     {{ currentLog.assertionResult }}
                                 </div>
-                                <button type="button" class="btn btn-sm btn-info" @click="viewAssertions(currentLog.id)">查看详细断言</button>
                             </div>
                         </div>
                     </div>
@@ -339,50 +359,7 @@
             </div>
         </div>
 
-        <!-- 断言详情模态框 -->
-        <div class="modal fade" id="assertionModal" tabindex="-1">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">断言详情</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div v-if="currentAssertions.length === 0" class="text-muted text-center py-3">
-                            暂无断言结果
-                        </div>
-                        <div v-for="assertion in currentAssertions" :key="assertion.id" class="card mb-3">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-3">
-                                        <strong>断言类型:</strong><br>
-                                        <span class="badge bg-primary">{{ getAssertionTypeName(assertion.assertionType) }}</span>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <strong>期望值:</strong><br>
-                                        <code>{{ assertion.expectedValue }}</code>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <strong>实际值:</strong><br>
-                                        <code>{{ assertion.actualValue || '无' }}</code>
-                                    </div>
-                                    <div class="col-md-1">
-                                        <strong>结果:</strong><br>
-                                        <span :class="assertion.passed ? 'badge bg-success' : 'badge bg-danger'">
-                                            {{ assertion.passed ? '通过' : '失败' }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div v-if="assertion.errorMessage" class="mt-2">
-                                    <strong>错误信息:</strong>
-                                    <div class="alert alert-danger py-1">{{ assertion.errorMessage }}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -404,12 +381,10 @@
                         assertionType: 'HTTP_CODE',
                         expectedValue: ''
                     },
-                    currentAssertions: [], // 用于查看断言结果
                     currentConfigTask: {},
                     editingTask: false,
                     taskModal: null,
                     logDetailModal: null,
-                    assertionModal: null,
                     assertionConfigModal: null,
                     currentUser: ''
                 };
@@ -420,7 +395,6 @@
                 
                 this.taskModal = new bootstrap.Modal(document.getElementById('taskModal'));
                 this.logDetailModal = new bootstrap.Modal(document.getElementById('logDetailModal'));
-                this.assertionModal = new bootstrap.Modal(document.getElementById('assertionModal'));
                 this.assertionConfigModal = new bootstrap.Modal(document.getElementById('assertionConfigModal'));
                 this.loadTasks();
                 this.loadLogs();
@@ -572,6 +546,10 @@
                 setCronExpression(expression) {
                     this.currentTask.cronExpression = expression;
                 },
+                toggleAssertionExpanded(log) {
+                    // Vue 3 中直接赋值即可实现响应式更新
+                    log.expandedAssertion = !log.expandedAssertion;
+                },
                 async checkAuth() {
                     try {
                         const response = await axios.get('/api/auth/check');
@@ -619,16 +597,7 @@
                         };
                     }
                 },
-                async viewAssertions(responseId) {
-                    try {
-                        const response = await axios.get(`/api/assertions/response/${responseId}`);
-                        this.currentAssertions = (response.data && response.data.data) ? response.data.data : [];
-                        this.assertionModal.show();
-                    } catch (error) {
-                        console.error('Failed to load assertions:', error);
-                        this.currentAssertions = [];
-                    }
-                },
+
                 addAssertion() {
                     // 单个断言，不需要添加方法
                 },
@@ -659,18 +628,7 @@
                             return '';
                     }
                 },
-                getAssertionTypeName(type) {
-                    switch (type) {
-                        case 'HTTP_CODE':
-                            return 'HTTP状态码';
-                        case 'JSON_CONTAINS':
-                            return 'JSON包含';
-                        case 'JSON_PATH':
-                            return 'JSON路径';
-                        default:
-                            return type;
-                    }
-                },
+
                 getAssertionClass(passed) {
                     return {
                         'badge bg-success': passed === true,
