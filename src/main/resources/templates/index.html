@@ -62,6 +62,7 @@
                                             <button class="btn btn-sm btn-info" @click="executeTask(task.id)">执行</button>
                                             <button class="btn btn-sm btn-primary" @click="configAssertions(task)">断言</button>
                                             <button class="btn btn-sm btn-outline-info" @click="viewTaskLogs(task.id)">日志</button>
+                                            <button class="btn btn-sm btn-outline-secondary" @click="copyTask(task)">复制</button>
                                             <button class="btn btn-sm btn-secondary" @click="editTask(task)">编辑</button>
                                             <button class="btn btn-sm btn-danger" @click="deleteTask(task.id)">删除</button>
                                         </td>
@@ -477,6 +478,21 @@
                 async editTask(task) {
                     this.editingTask = true;
                     this.currentTask = { ...task };
+                    this.taskModal.show();
+                },
+                copyTask(task) {
+                    this.editingTask = false; // 设置为新增模式
+                    // 复制任务的所有属性，但不包含ID和断言
+                    this.currentTask = {
+                        taskName: task.taskName + ' (副本)',
+                        url: task.url,
+                        method: task.method,
+                        timeout: task.timeout,
+                        cronExpression: task.cronExpression,
+                        headers: task.headers,
+                        parameters: task.parameters,
+                        description: task.description
+                    };
                     this.taskModal.show();
                 },
                 async saveTask() {
