@@ -61,6 +61,7 @@
                                             <button class="btn btn-sm btn-warning" @click="pauseTask(task.id)" v-if="task.status === 'RUNNING'">暂停</button>
                                             <button class="btn btn-sm btn-info" @click="executeTask(task.id)">执行</button>
                                             <button class="btn btn-sm btn-primary" @click="configAssertions(task)">断言</button>
+                                            <button class="btn btn-sm btn-outline-info" @click="viewTaskLogs(task.id)">日志</button>
                                             <button class="btn btn-sm btn-secondary" @click="editTask(task)">编辑</button>
                                             <button class="btn btn-sm btn-danger" @click="deleteTask(task.id)">删除</button>
                                         </td>
@@ -79,7 +80,25 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h5>执行日志</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5>执行日志</h5>
+                                <div class="d-flex align-items-center">
+                                    <select class="form-select me-2" style="width: 300px;" v-model="selectedTaskId" @change="filterLogsByTask">
+                                        <option value="">所有任务</option>
+                                        <option v-for="task in allTasks" :key="task.id" :value="task.id">
+                                            {{ task.taskName }} ({{ task.url }})
+                                        </option>
+                                    </select>
+                                    <button class="btn btn-outline-secondary btn-sm" @click="clearLogFilter">清除筛选</button>
+                                </div>
+                            </div>
+                            <div v-if="selectedTaskId" class="alert alert-info mb-0 py-2">
+                                <small>
+                                    <strong>当前筛选：</strong>
+                                    {{ getSelectedTaskName() }}
+                                    <span class="ms-2">共 {{ filteredLogs.length }} 条记录</span>
+                                </small>
+                            </div>
                         </div>
                         <div class="card-body">
                             <table class="table table-striped">
@@ -98,7 +117,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="log in logs" :key="log.id">
+                                    <tr v-for="log in filteredLogs" :key="log.id">
                                         <td>{{ log.id }}</td>
                                         <td>{{ log.taskId }}</td>
                                         <td>{{ log.requestUrl }}</td>
@@ -376,6 +395,9 @@
                     currentView: 'tasks',
                     tasks: [],
                     logs: [],
+                    allTasks: [], // 用于日志筛选的任务列表
+                    filteredLogs: [], // 筛选后的日志
+                    selectedTaskId: '', // 当前选中的任务ID
                     currentTask: {},
                     currentLog: {},
                     currentAssertion: {
@@ -415,19 +437,54 @@
                     try {
                         const response = await axios.get('/api/tasks');
                         this.tasks = (response.data && response.data.data) ? response.data.data : [];
+                        this.allTasks = [...this.tasks]; // 复制任务列表用于筛选
                     } catch (error) {
                         console.error('Failed to load tasks:', error);
                         this.tasks = [];
+                        this.allTasks = [];
                     }
                 },
                 async loadLogs() {
                     try {
                         const response = await axios.get('/api/responses');
                         this.logs = (response.data && response.data.data) ? response.data.data : [];
+                        this.filteredLogs = [...this.logs]; // 初始化筛选后的日志
                     } catch (error) {
                         console.error('Failed to load logs:', error);
                         this.logs = [];
+                        this.filteredLogs = [];
                     }
+                },
+                // 日志筛选相关方法
+                async filterLogsByTask() {
+                    if (this.selectedTaskId) {
+                        await this.loadTaskLogs(this.selectedTaskId);
+                    } else {
+                        this.filteredLogs = [...this.logs];
+                    }
+                },
+                async loadTaskLogs(taskId) {
+                    try {
+                        const response = await axios.get(`/api/responses/task/${taskId}`);
+                        this.filteredLogs = (response.data && response.data.data) ? response.data.data : [];
+                    } catch (error) {
+                        console.error('Failed to load task logs:', error);
+                        this.filteredLogs = [];
+                    }
+                },
+                clearLogFilter() {
+                    this.selectedTaskId = '';
+                    this.filteredLogs = [...this.logs];
+                },
+                getSelectedTaskName() {
+                    if (!this.selectedTaskId) return '';
+                    const task = this.allTasks.find(t => t.id === this.selectedTaskId);
+                    return task ? `${task.taskName} (${task.url})` : '未知任务';
+                },
+                async viewTaskLogs(taskId) {
+                    this.selectedTaskId = taskId;
+                    this.currentView = 'logs';
+                    await this.loadTaskLogs(taskId);
                 },
                 showAddTaskModal() {
                     this.editingTask = false;
