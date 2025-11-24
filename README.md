@@ -248,13 +248,17 @@ mybatis:
 
 ## 📋 更新日志
 
-### v2.0 (2025-11-23)
-- ✨ spring-boot-UrlTaskScheduler全新改名为springboot-api-scheduler
-- ✅ 重构项目
-- ✅ 用户登录功能
-- ✅ 断言功能重构 [ASSERTION_GUIDE.md](ASSERTION_GUIDE.md)
+### v2.0 (2025~Now)
+✨ spring-boot-UrlTaskScheduler全新改名为springboot-api-scheduler
 
-### v1.0
+| 日期 | 更新内容 |
+|------|----------|
+| 2025-11-24 | 🩹 修复Maven打包JAR问题 🔧 OkHttpClient配置忽略SSL |
+| 2025-11-23 | ✅ 断言功能重构 [ASSERTION_GUIDE.md](ASSERTION_GUIDE.md) |
+| 2025-11-22 | ✅ 重构项目 ✅ 用户登录功能 |
+
+
+### v1.0 (2019~2022)
 | 日期 | 更新内容 |
 |------|----------|
 | 2022-11-26 | 回滚页面到旧版本并进行优化 |
