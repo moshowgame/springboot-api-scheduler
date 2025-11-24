@@ -345,8 +345,17 @@
                                         <div class="col-md-3">
                                         </div>
                                     </div>
-                                    <div v-if="currentAssertion.assertionType" class="mt-2">
-                                        <small class="text-muted">{{ getAssertionDescription(currentAssertion.assertionType) }}</small>
+                                    <div v-if="currentAssertion.assertionType" class="mt-3">
+                                        <div class="alert alert-info">
+                                            <h6 class="alert-heading">{{ getAssertionTitle(currentAssertion.assertionType) }}</h6>
+                                            <div class="mb-2">{{ getAssertionDescription(currentAssertion.assertionType) }}</div>
+                                            <div class="mt-2">
+                                                <strong>示例：</strong>
+                                                <div class="mt-1 p-2 bg-light rounded">
+                                                    <code>{{ getAssertionExample(currentAssertion.assertionType) }}</code>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -640,6 +649,36 @@
                             return '检查响应体是否包含指定的关键字';
                         case 'JSON_PATH':
                             return '使用JSONPath表达式检查响应体中的特定字段值';
+                        default:
+                            return '';
+                    }
+                },
+                getAssertionTitle(type) {
+                    switch (type) {
+                        case 'HTTP_CODE':
+                            return 'HTTP状态码断言';
+                        case 'JSON_CONTAINS':
+                            return 'JSON包含关键字断言';
+                        case 'JSON_PATH':
+                            return 'JSON路径断言';
+                        default:
+                            return '';
+                    }
+                },
+                getAssertionExample(type) {
+                    switch (type) {
+                        case 'HTTP_CODE':
+                            return `期望值: 200
+用途: 验证API请求成功返回
+常见值: 200(成功), 400(客户端错误), 500(服务器错误)`;
+                        case 'JSON_CONTAINS':
+                            return `期望值: success
+用途: 检查响应体中是否包含成功标识
+其他示例: error, "status":"ok", "message"`;
+                        case 'JSON_PATH':
+                            return `期望值: $.code
+用途: 检查JSON响应中特定字段的值
+其他示例: $.data.status, $.users[0].name, $.msg`;
                         default:
                             return '';
                     }
