@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -84,6 +84,9 @@
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5>执行日志</h5>
                                 <div class="d-flex align-items-center">
+                                    <button class="btn btn-primary btn-sm me-2" @click="refreshLogs">
+                                        🔄 刷新
+                                    </button>
                                     <select class="form-select me-2" style="width: 300px;" v-model="selectedTaskId" @change="filterLogsByTask">
                                         <option value="">所有任务</option>
                                         <option v-for="task in allTasks" :key="task.id" :value="task.id">
@@ -93,13 +96,73 @@
                                     <button class="btn btn-outline-secondary btn-sm" @click="clearLogFilter">清除筛选</button>
                                 </div>
                             </div>
-                            <div v-if="selectedTaskId" class="alert alert-info mb-0 py-2">
-                                <small>
-                                    <strong>当前筛选：</strong>
-                                    {{ getSelectedTaskName() }}
-                                    <span class="ms-2">共 {{ filteredLogs.length }} 条记录</span>
-                                </small>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div v-if="selectedTaskId" class="alert alert-info mb-0 py-2">
+                                    <small>
+                                        <strong>当前筛选：</strong>
+                                        {{ getSelectedTaskName() }}
+                                        <span class="ms-2">共 {{ filteredLogs.length }} 条记录</span>
+                                    </small>
+                                </div>
+                                <div v-else class="text-muted">
+                                    <small>共 {{ totalLogs }} 条记录，当前显示第 {{ (currentPage-1)*pageSize+1 }} - {{ Math.min(currentPage*pageSize, totalLogs) }} 条</small>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <label class="form-label me-2 mb-0">每页显示：</label>
+                                    <select class="form-select form-select-sm" style="width: auto;" v-model="pageSize" @change="changePageSize">
+                                        <option value="10">10条</option>
+                                        <option value="50">50条</option>
+                                        <option value="100">100条</option>
+                                        <option value="500">500条</option>
+                                    </select>
+                                </div>
                             </div>
+                            
+                            <!-- 时间范围查询 -->
+                            <div class="row mb-2">
+                                <div class="col-md-12">
+                                    <div class="d-flex align-items-center">
+                                        <label class="form-label me-2 mb-0">执行时间范围：</label>
+                                        <input type="datetime-local" class="form-control form-control-sm me-2" 
+                                               style="width: 200px;" 
+                                               v-model="timeRange.startTime">
+                                        <span class="me-2">至</span>
+                                        <input type="datetime-local" class="form-control form-control-sm me-2" 
+                                               style="width: 200px;" 
+                                               v-model="timeRange.endTime">
+                                        <button class="btn btn-outline-primary btn-sm me-2" @click="applyTimeRange">应用</button>
+                                        <button class="btn btn-outline-secondary btn-sm" @click="clearTimeRange">清除</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 上方分页控件 -->
+                            <nav class="mt-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2" 
+                                                :disabled="currentPage <= 1" 
+                                                @click="goToPage(currentPage - 1)">
+                                            上一页
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                :disabled="currentPage >= totalPages" 
+                                                @click="goToPage(currentPage + 1)">
+                                            下一页
+                                        </button>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">跳转到</span>
+                                        <input type="number" class="form-control form-control-sm me-2" 
+                                               style="width: 80px;" 
+                                               v-model.number="jumpToPage" 
+                                               :min="1" 
+                                               :max="totalPages">
+                                        <button class="btn btn-sm btn-primary" @click="goToJumpedPage">确定</button>
+                                        <span class="ms-2">共 {{ totalPages }} 页</span>
+                                    </div>
+                                </div>
+                            </nav>
                         </div>
                         <div class="card-body">
                             <table class="table table-striped">
@@ -162,6 +225,46 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            
+                            <!-- 下方分页控件 -->
+                            <nav v-if="totalPages > 1" class="mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary me-2" 
+                                                :disabled="currentPage <= 1" 
+                                                @click="goToPage(currentPage - 1)">
+                                            上一页
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                :disabled="currentPage >= totalPages" 
+                                                @click="goToPage(currentPage + 1)">
+                                            下一页
+                                        </button>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">跳转到</span>
+                                        <input type="number" class="form-control form-control-sm me-2" 
+                                               style="width: 80px;" 
+                                               v-model.number="jumpToPage" 
+                                               :min="1" 
+                                               :max="totalPages">
+                                        <button class="btn btn-sm btn-primary" @click="goToJumpedPage">确定</button>
+                                        <span class="ms-2">共 {{ totalPages }} 页</span>
+                                    </div>
+                                </div>
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item" :class="{ disabled: currentPage <= 1 }">
+                                        <a class="page-link" href="#" @click.prevent="goToPage(currentPage - 1)">上一页</a>
+                                    </li>
+                                    <li v-for="page in displayedPages" :key="page" 
+                                        class="page-item" :class="{ active: page === currentPage }">
+                                        <a class="page-link" href="#" @click.prevent="goToPage(page)">{{ page }}</a>
+                                    </li>
+                                    <li class="page-item" :class="{ disabled: currentPage >= totalPages }">
+                                        <a class="page-link" href="#" @click.prevent="goToPage(currentPage + 1)">下一页</a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>
@@ -396,7 +499,22 @@
                     taskModal: null,
                     logDetailModal: null,
                     assertionConfigModal: null,
-                    currentUser: ''
+                    currentUser: '',
+                    // 分页相关
+                    currentPage: 1,
+                    pageSize: 50,
+                    totalPages: 0,
+                    totalLogs: 0,
+                    // 防抖相关
+                    lastRefreshTime: 0,
+                    refreshCooldown: 1000, // 1秒冷却时间
+                    // 跳转页面
+                    jumpToPage: 1,
+                    // 时间范围查询
+                    timeRange: {
+                        startTime: '',
+                        endTime: ''
+                    }
                 };
             },
             mounted() {
@@ -415,6 +533,8 @@
                 },
                 showLogs() {
                     this.currentView = 'logs';
+                    this.currentPage = 1;
+                    this.selectedTaskId = '';
                     this.loadLogs();
                 },
                 async loadTasks() {
@@ -430,13 +550,30 @@
                 },
                 async loadLogs() {
                     try {
-                        const response = await axios.get('/api/responses');
+                        const params = {
+                            page: this.currentPage,
+                            size: this.pageSize
+                        };
+                        
+                        // 添加时间范围参数
+                        if (this.timeRange.startTime) {
+                            params.startTime = this.formatDateTimeForAPI(this.timeRange.startTime);
+                        }
+                        if (this.timeRange.endTime) {
+                            params.endTime = this.formatDateTimeForAPI(this.timeRange.endTime);
+                        }
+                        
+                        const response = await axios.get('/api/responses', { params });
                         this.logs = (response.data && response.data.data) ? response.data.data : [];
                         this.filteredLogs = [...this.logs]; // 初始化筛选后的日志
+                        this.totalLogs = response.data?.total || 0;
+                        this.totalPages = Math.ceil(this.totalLogs / this.pageSize);
                     } catch (error) {
                         console.error('Failed to load logs:', error);
                         this.logs = [];
                         this.filteredLogs = [];
+                        this.totalLogs = 0;
+                        this.totalPages = 0;
                     }
                 },
                 // 日志筛选相关方法
@@ -449,16 +586,33 @@
                 },
                 async loadTaskLogs(taskId) {
                     try {
-                        const response = await axios.get(`/api/responses/task/${taskId}`);
+                        const params = {};
+                        
+                        // 添加时间范围参数
+                        if (this.timeRange.startTime) {
+                            params.startTime = this.formatDateTimeForAPI(this.timeRange.startTime);
+                        }
+                        if (this.timeRange.endTime) {
+                            params.endTime = this.formatDateTimeForAPI(this.timeRange.endTime);
+                        }
+                        
+                        const response = await axios.get(`/api/responses/task/${taskId}`, { params });
                         this.filteredLogs = (response.data && response.data.data) ? response.data.data : [];
+                        this.totalLogs = response.data?.total || 0;
+                        this.totalPages = Math.ceil(this.totalLogs / this.pageSize);
                     } catch (error) {
                         console.error('Failed to load task logs:', error);
                         this.filteredLogs = [];
+                        this.totalLogs = 0;
+                        this.totalPages = 0;
                     }
                 },
-                clearLogFilter() {
+                async clearLogFilter() {
                     this.selectedTaskId = '';
-                    this.filteredLogs = [...this.logs];
+                    this.timeRange.startTime = '';
+                    this.timeRange.endTime = '';
+                    this.currentPage = 1;
+                    await this.loadLogs();
                 },
                 getSelectedTaskName() {
                     if (!this.selectedTaskId) return '';
@@ -468,6 +622,7 @@
                 async viewTaskLogs(taskId) {
                     this.selectedTaskId = taskId;
                     this.currentView = 'logs';
+                    this.currentPage = 1;
                     await this.loadTaskLogs(taskId);
                 },
                 showAddTaskModal() {
@@ -716,6 +871,99 @@
                         console.error('Failed to save assertions:', error);
                         alert('保存断言失败: ' + (error.response?.data?.message || error.message));
                     }
+                },
+                // 分页相关方法
+                async refreshLogs() {
+                    const currentTime = Date.now();
+                    if (currentTime - this.lastRefreshTime < this.refreshCooldown) {
+                        const remainingTime = Math.ceil((this.refreshCooldown - (currentTime - this.lastRefreshTime)) / 1000);
+                        alert(`请等待 ${remainingTime} 秒后再刷新`);
+                        return;
+                    }
+                    
+                    this.lastRefreshTime = currentTime;
+                    this.currentPage = 1;
+                    
+                    try {
+                        if (this.selectedTaskId) {
+                            // 如果选择了特定任务，刷新该任务的日志
+                            await this.loadTaskLogs(this.selectedTaskId);
+                        } else {
+                            // 否则刷新全部日志
+                            await this.loadLogs();
+                        }
+                    } catch (error) {
+                        // 如果刷新失败，重置冷却时间，允许用户重试
+                        this.lastRefreshTime = 0;
+                        console.error('刷新日志失败:', error);
+                    }
+                },
+                async changePageSize() {
+                    this.currentPage = 1;
+                    if (this.selectedTaskId) {
+                        // 如果选择了特定任务，刷新该任务的日志
+                        await this.loadTaskLogs(this.selectedTaskId);
+                    } else {
+                        // 否则刷新全部日志
+                        await this.loadLogs();
+                    }
+                },
+                async goToPage(page) {
+                    if (page < 1 || page > this.totalPages) return;
+                    this.currentPage = page;
+                    this.jumpToPage = page; // 同步跳转输入框的值
+                    await this.loadLogs();
+                },
+                async goToJumpedPage() {
+                    if (this.jumpToPage < 1 || this.jumpToPage > this.totalPages) {
+                        alert(`请输入1到${this.totalPages}之间的页码`);
+                        return;
+                    }
+                    await this.goToPage(this.jumpToPage);
+                },
+                // 时间范围查询相关方法
+                async applyTimeRange() {
+                    this.currentPage = 1;
+                    if (this.selectedTaskId) {
+                        await this.loadTaskLogs(this.selectedTaskId);
+                    } else {
+                        await this.loadLogs();
+                    }
+                },
+                async clearTimeRange() {
+                    this.timeRange.startTime = '';
+                    this.timeRange.endTime = '';
+                    this.currentPage = 1;
+                    if (this.selectedTaskId) {
+                        await this.loadTaskLogs(this.selectedTaskId);
+                    } else {
+                        await this.loadLogs();
+                    }
+                },
+                // 日期时间格式化方法
+                formatDateTimeForAPI(dateTimeLocal) {
+                    if (!dateTimeLocal) return '';
+                    // 将本地时间格式转换为API需要的格式
+                    const date = new Date(dateTimeLocal);
+                    return date.toISOString();
+                },
+                formatDateTimeLocal(dateTimeLocal) {
+                    if (!dateTimeLocal) return '';
+                    // 格式化本地时间显示
+                    const date = new Date(dateTimeLocal);
+                    return date.toLocaleString();
+                }
+            },
+            computed: {
+                displayedPages() {
+                    const pages = [];
+                    const start = Math.max(1, this.currentPage - 2);
+                    const end = Math.min(this.totalPages, this.currentPage + 2);
+                    
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+                    return pages;
                 }
             }
         }).mount('#app');

@@ -27,6 +27,11 @@ public class ApiResponseServiceImpl implements ApiResponseService {
     }
 
     @Override
+    public List<ApiResponse> findByTaskIdWithTimeRange(String taskId, String startTime, String endTime) {
+        return apiResponseMapper.findByTaskIdWithTimeRange(taskId, startTime, endTime);
+    }
+
+    @Override
     public List<ApiResponse> findAll() {
         return apiResponseMapper.findAll();
     }
@@ -38,7 +43,23 @@ public class ApiResponseServiceImpl implements ApiResponseService {
     }
 
     @Override
+    public List<ApiResponse> findByPageWithTimeRange(int page, int size, String startTime, String endTime) {
+        int offset = (page - 1) * size;
+        return apiResponseMapper.findByPageWithTimeRange(offset, size, startTime, endTime);
+    }
+
+    @Override
     public int count() {
         return apiResponseMapper.count();
+    }
+
+    @Override
+    public int countByTimeRange(String startTime, String endTime) {
+        return apiResponseMapper.countByTimeRange(startTime, endTime);
+    }
+
+    @Override
+    public int countByTaskIdWithTimeRange(String taskId, String startTime, String endTime) {
+        return apiResponseMapper.countByTaskIdWithTimeRange(taskId, startTime, endTime);
     }
 }

@@ -20,9 +20,11 @@ public class ApiResponseController {
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllResponses(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        List<ApiResponse> responses = apiResponseService.findByPage(page, size);
-        int total = apiResponseService.count();
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime) {
+        List<ApiResponse> responses = apiResponseService.findByPageWithTimeRange(page, size, startTime, endTime);
+        int total = apiResponseService.countByTimeRange(startTime, endTime);
         
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
@@ -35,11 +37,17 @@ public class ApiResponseController {
     }
 
     @GetMapping("/task/{taskId}")
-    public ResponseEntity<Map<String, Object>> getResponsesByTaskId(@PathVariable String taskId) {
-        List<ApiResponse> responses = apiResponseService.findByTaskId(taskId);
+    public ResponseEntity<Map<String, Object>> getResponsesByTaskId(
+            @PathVariable String taskId,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime) {
+        List<ApiResponse> responses = apiResponseService.findByTaskIdWithTimeRange(taskId, startTime, endTime);
+        int total = apiResponseService.countByTaskIdWithTimeRange(taskId, startTime, endTime);
+        
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
         result.put("data", responses);
+        result.put("total", total);
         result.put("message", "Success");
         return ResponseEntity.ok(result);
     }
