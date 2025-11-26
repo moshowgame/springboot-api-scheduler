@@ -26,26 +26,18 @@ public class ApiResponseServiceImpl implements ApiResponseService {
         return apiResponseMapper.findByTaskId(taskId);
     }
 
-    @Override
-    public List<ApiResponse> findByTaskIdWithTimeRange(String taskId, String startTime, String endTime) {
-        return apiResponseMapper.findByTaskIdWithTimeRange(taskId, startTime, endTime);
-    }
 
     @Override
     public List<ApiResponse> findAll() {
         return apiResponseMapper.findAll();
     }
 
-    @Override
-    public List<ApiResponse> findByPage(int page, int size) {
-        int offset = (page - 1) * size;
-        return apiResponseMapper.findByPage(offset, size);
-    }
+
 
     @Override
-    public List<ApiResponse> findByPageWithTimeRange(int page, int size, String startTime, String endTime) {
+    public List<ApiResponse> findByPageWithConditions(int page, int size, String taskId, String startTime, String endTime) {
         int offset = (page - 1) * size;
-        return apiResponseMapper.findByPageWithTimeRange(offset, size, startTime, endTime);
+        return apiResponseMapper.findByPageWithConditions(offset, size, taskId, startTime, endTime);
     }
 
     @Override
@@ -53,13 +45,9 @@ public class ApiResponseServiceImpl implements ApiResponseService {
         return apiResponseMapper.count();
     }
 
-    @Override
-    public int countByTimeRange(String startTime, String endTime) {
-        return apiResponseMapper.countByTimeRange(startTime, endTime);
-    }
 
     @Override
-    public int countByTaskIdWithTimeRange(String taskId, String startTime, String endTime) {
-        return apiResponseMapper.countByTaskIdWithTimeRange(taskId, startTime, endTime);
+    public int countByConditions(String taskId, String startTime, String endTime) {
+        return apiResponseMapper.countByConditions(taskId, startTime, endTime);
     }
 }

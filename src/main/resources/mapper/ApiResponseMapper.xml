@@ -39,18 +39,24 @@
         SELECT * FROM api_response ORDER BY execute_time DESC
     </select>
 
-    <select id="findByPage" resultMap="ApiResponseResult">
-        SELECT * FROM api_response ORDER BY execute_time DESC LIMIT #{limit} OFFSET #{offset}
-    </select>
-
-    <select id="findByPageWithTimeRange" resultMap="ApiResponseResult">
+    <!-- 新增统一处理所有条件的方法 -->
+    <select id="findByPageWithConditions" resultMap="ApiResponseResult">
         SELECT * FROM api_response
         <where>
+            <if test="taskId != null and taskId != ''">
+                task_id = #{taskId}
+            </if>
             <if test="startTime != null and startTime != ''">
+                <if test="taskId != null and taskId != ''">
+                    AND
+                </if>
                 execute_time &gt;= #{startTime}::timestamp
             </if>
             <if test="endTime != null and endTime != ''">
-                AND execute_time &lt;= #{endTime}::timestamp
+                <if test="(taskId != null and taskId != '') or (startTime != null and startTime != '')">
+                    AND
+                </if>
+                execute_time &lt;= #{endTime}::timestamp
             </if>
         </where>
         ORDER BY execute_time DESC LIMIT #{limit} OFFSET #{offset}
@@ -60,27 +66,26 @@
         SELECT COUNT(*) FROM api_response
     </select>
 
-    <select id="countByTimeRange" resultType="int">
+    <!-- 新增统一计数方法 -->
+    <select id="countByConditions" resultType="int">
         SELECT COUNT(*) FROM api_response
         <where>
+            <if test="taskId != null and taskId != ''">
+                task_id = #{taskId}
+            </if>
             <if test="startTime != null and startTime != ''">
+                <if test="taskId != null and taskId != ''">
+                    AND
+                </if>
                 execute_time &gt;= #{startTime}::timestamp
             </if>
             <if test="endTime != null and endTime != ''">
-                AND execute_time &lt;= #{endTime}::timestamp
+                <if test="(taskId != null and taskId != '') or (startTime != null and startTime != '')">
+                    AND
+                </if>
+                execute_time &lt;= #{endTime}::timestamp
             </if>
         </where>
-    </select>
-
-    <select id="countByTaskIdWithTimeRange" resultType="int">
-        SELECT COUNT(*) FROM api_response
-        WHERE task_id = #{taskId}
-        <if test="startTime != null and startTime != ''">
-            AND execute_time &gt;= #{startTime}::timestamp
-        </if>
-        <if test="endTime != null and endTime != ''">
-            AND execute_time &lt;= #{endTime}::timestamp
-        </if>
     </select>
 
     <insert id="insert" parameterType="com.software.dev.entity.ApiResponse">

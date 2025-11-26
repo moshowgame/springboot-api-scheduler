@@ -81,85 +81,76 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5>执行日志</h5>
-                                <div class="d-flex align-items-center">
-                                    <button class="btn btn-primary btn-sm me-2" @click="refreshLogs">
-                                        🔄 刷新
-                                    </button>
-                                    <select class="form-select me-2" style="width: 300px;" v-model="selectedTaskId" @change="filterLogsByTask">
-                                        <option value="">所有任务</option>
-                                        <option v-for="task in allTasks" :key="task.id" :value="task.id">
-                                            {{ task.taskName }} ({{ task.url }})
-                                        </option>
-                                    </select>
-                                    <button class="btn btn-outline-secondary btn-sm" @click="clearLogFilter">清除筛选</button>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div v-if="selectedTaskId" class="alert alert-info mb-0 py-2">
-                                    <small>
-                                        <strong>当前筛选：</strong>
-                                        {{ getSelectedTaskName() }}
-                                        <span class="ms-2">共 {{ filteredLogs.length }} 条记录</span>
-                                    </small>
-                                </div>
-                                <div v-else class="text-muted">
-                                    <small>共 {{ totalLogs }} 条记录，当前显示第 {{ (currentPage-1)*pageSize+1 }} - {{ Math.min(currentPage*pageSize, totalLogs) }} 条</small>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <label class="form-label me-2 mb-0">每页显示：</label>
-                                    <select class="form-select form-select-sm" style="width: auto;" v-model="pageSize" @change="changePageSize">
-                                        <option value="10">10条</option>
-                                        <option value="50">50条</option>
-                                        <option value="100">100条</option>
-                                        <option value="500">500条</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
                             <!-- 时间范围查询 -->
-                            <div class="row mb-2">
+                            <div class="row mb-3">
                                 <div class="col-md-12">
-                                    <div class="d-flex align-items-center">
-                                        <label class="form-label me-2 mb-0">执行时间范围：</label>
-                                        <input type="datetime-local" class="form-control form-control-sm me-2" 
-                                               style="width: 200px;" 
-                                               v-model="timeRange.startTime">
-                                        <span class="me-2">至</span>
-                                        <input type="datetime-local" class="form-control form-control-sm me-2" 
-                                               style="width: 200px;" 
-                                               v-model="timeRange.endTime">
-                                        <button class="btn btn-outline-primary btn-sm me-2" @click="applyTimeRange">应用</button>
-                                        <button class="btn btn-outline-secondary btn-sm" @click="clearTimeRange">清除</button>
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white py-2">
+                                            <i class="fas fa-calendar-alt me-2"></i>日志筛选
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center flex-wrap">
+                                                <div class="d-flex align-items-center">
+                                                    <button class="btn btn-primary btn-sm me-2" @click="refreshLogs">
+                                                        🔄 刷新
+                                                    </button>
+                                                    <select class="form-select me-2" style="width: 300px;" v-model="selectedTaskId" @change="filterLogsByTask">
+                                                        <option value="">所有任务</option>
+                                                        <option v-for="task in allTasks" :key="task.id" :value="task.id">
+                                                            {{ task.taskName }} ({{ task.url }})
+                                                        </option>
+                                                    </select>
+                                                </div>
+
+                                                <label class="form-label me-2 mb-0 fw-bold">开始时间:</label>
+                                                <input type="datetime-local" class="form-control form-control-sm me-3" 
+                                                       style="width: 220px;" 
+                                                       v-model="timeRange.startTime">
+                                                <label class="form-label me-2 mb-0 fw-bold">结束时间:</label>
+                                                <input type="datetime-local" class="form-control form-control-sm me-3" 
+                                                       style="width: 220px;" 
+                                                       v-model="timeRange.endTime">
+                                                <button class="btn btn-outline-primary btn-sm me-2" @click="applyTimeRange">
+                                                    <i class="fas fa-search me-1"></i>应用筛选
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm" @click="clearTimeRange">
+                                                    <i class="fas fa-times me-1"></i>清除筛选
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             
                             <!-- 上方分页控件 -->
-                            <nav class="mt-2">
+                            <nav class="mt-3">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-primary me-2" 
-                                                :disabled="currentPage <= 1" 
+                                    <div class="alert alert-info mb-0 py-2">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            <!--<strong>当前筛选：</strong>
+                                            {{ getSelectedTaskName() }}-->
+                                            <span class="ms-2">共 {{ totalLogs }} 条记录，当前显示第 {{ (currentPage-1)*pageSize+1 }} - {{ Math.min(currentPage*pageSize, totalLogs) }} 条</span>
+                                        </small>
+                                    </div>
+                                    <div class="d-flex align-items-center bg-light p-2 rounded">
+                                        <button class="btn btn-sm btn-outline-primary me-2"
+                                                :disabled="currentPage <= 1"
                                                 @click="goToPage(currentPage - 1)">
                                             上一页
                                         </button>
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                :disabled="currentPage >= totalPages" 
+                                        <button class="btn btn-sm btn-outline-primary"
+                                                :disabled="currentPage >= totalPages"
                                                 @click="goToPage(currentPage + 1)">
                                             下一页
                                         </button>
-                                    </div>
-                                    <div class="d-flex align-items-center">
-                                        <span class="me-2">跳转到</span>
-                                        <input type="number" class="form-control form-control-sm me-2" 
-                                               style="width: 80px;" 
-                                               v-model.number="jumpToPage" 
-                                               :min="1" 
-                                               :max="totalPages">
-                                        <button class="btn btn-sm btn-primary" @click="goToJumpedPage">确定</button>
-                                        <span class="ms-2">共 {{ totalPages }} 页</span>
+                                        <label class="form-label me-2 mb-0">每页显示：</label>
+                                        <select class="form-select form-select-sm" style="width: auto;" v-model="pageSize" @change="changePageSize">
+                                            <option value="10">10条</option>
+                                            <option value="50">50条</option>
+                                            <option value="100">100条</option>
+                                            <option value="500">500条</option>
+                                        </select>
                                     </div>
                                 </div>
                             </nav>
@@ -169,7 +160,6 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>任务ID</th>
                                         <th>请求URL</th>
                                         <th>方法</th>
                                         <th>响应码</th>
@@ -183,7 +173,6 @@
                                 <tbody>
                                     <tr v-for="log in filteredLogs" :key="log.id">
                                         <td>{{ log.id }}</td>
-                                        <td>{{ log.taskId }}</td>
                                         <td>{{ log.requestUrl }}</td>
                                         <td>{{ log.requestMethod }}</td>
                                         <td>{{ log.responseCode }}</td>
@@ -228,31 +217,40 @@
                             
                             <!-- 下方分页控件 -->
                             <nav v-if="totalPages > 1" class="mt-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-primary me-2" 
-                                                :disabled="currentPage <= 1" 
-                                                @click="goToPage(currentPage - 1)">
-                                            上一页
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                :disabled="currentPage >= totalPages" 
-                                                @click="goToPage(currentPage + 1)">
-                                            下一页
-                                        </button>
+                                <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2 text-muted">
+                                            <i class="fas fa-list me-1"></i>
+                                            共 {{ totalLogs }} 条记录，当前显示第 {{ (currentPage-1)*pageSize+1 }} - {{ Math.min(currentPage*pageSize, totalLogs) }} 条
+                                        </span>
                                     </div>
                                     <div class="d-flex align-items-center">
-                                        <span class="me-2">跳转到</span>
-                                        <input type="number" class="form-control form-control-sm me-2" 
-                                               style="width: 80px;" 
-                                               v-model.number="jumpToPage" 
-                                               :min="1" 
-                                               :max="totalPages">
-                                        <button class="btn btn-sm btn-primary" @click="goToJumpedPage">确定</button>
-                                        <span class="ms-2">共 {{ totalPages }} 页</span>
+                                        <div class="d-flex align-items-center me-4">
+                                            <span class="me-2">跳转到</span>
+                                            <input type="number" class="form-control form-control-sm me-2" 
+                                                   style="width: 80px;" 
+                                                   v-model.number="jumpToPage" 
+                                                   :min="1" 
+                                                   :max="totalPages">
+                                            <button class="btn btn-sm btn-primary me-3" @click="goToJumpedPage">
+                                                <i class="fas fa-arrow-right me-1"></i>确定
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-2" 
+                                                    :disabled="currentPage <= 1" 
+                                                    @click="goToPage(currentPage - 1)">
+                                                <i class="fas fa-chevron-left me-1"></i>上一页
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    :disabled="currentPage >= totalPages" 
+                                                    @click="goToPage(currentPage + 1)">
+                                                下一页<i class="fas fa-chevron-right ms-1"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                                <ul class="pagination justify-content-center">
+                                <ul class="pagination justify-content-center mb-0">
                                     <li class="page-item" :class="{ disabled: currentPage <= 1 }">
                                         <a class="page-link" href="#" @click.prevent="goToPage(currentPage - 1)">上一页</a>
                                     </li>
@@ -555,17 +553,25 @@
                             size: this.pageSize
                         };
                         
-                        // 添加时间范围参数
+                        // 添加时间范围参数（使用本地时间格式）
                         if (this.timeRange.startTime) {
-                            params.startTime = this.formatDateTimeForAPI(this.timeRange.startTime);
+                            params.startTime = this.timeRange.startTime;
+                            //params.startTime = this.formatDateTimeForAPI(this.timeRange.startTime);
                         }
                         if (this.timeRange.endTime) {
-                            params.endTime = this.formatDateTimeForAPI(this.timeRange.endTime);
+                            params.endTime = this.timeRange.endTime;
+                            //params.endTime = this.formatDateTimeForAPI(this.timeRange.endTime);
+                        }
+                        
+                        // 添加任务筛选参数
+                        if (this.selectedTaskId) {
+                            params.taskId = this.selectedTaskId;
                         }
                         
                         const response = await axios.get('/api/responses', { params });
                         this.logs = (response.data && response.data.data) ? response.data.data : [];
                         this.filteredLogs = [...this.logs]; // 初始化筛选后的日志
+                        console.log('response.data:', response.data);
                         this.totalLogs = response.data?.total || 0;
                         this.totalPages = Math.ceil(this.totalLogs / this.pageSize);
                     } catch (error) {
@@ -578,34 +584,12 @@
                 },
                 // 日志筛选相关方法
                 async filterLogsByTask() {
-                    if (this.selectedTaskId) {
-                        await this.loadTaskLogs(this.selectedTaskId);
-                    } else {
-                        this.filteredLogs = [...this.logs];
-                    }
+                    // 统一使用loadLogs方法处理所有筛选条件
+                    await this.loadLogs();
                 },
                 async loadTaskLogs(taskId) {
-                    try {
-                        const params = {};
-                        
-                        // 添加时间范围参数
-                        if (this.timeRange.startTime) {
-                            params.startTime = this.formatDateTimeForAPI(this.timeRange.startTime);
-                        }
-                        if (this.timeRange.endTime) {
-                            params.endTime = this.formatDateTimeForAPI(this.timeRange.endTime);
-                        }
-                        
-                        const response = await axios.get(`/api/responses/task/${taskId}`, { params });
-                        this.filteredLogs = (response.data && response.data.data) ? response.data.data : [];
-                        this.totalLogs = response.data?.total || 0;
-                        this.totalPages = Math.ceil(this.totalLogs / this.pageSize);
-                    } catch (error) {
-                        console.error('Failed to load task logs:', error);
-                        this.filteredLogs = [];
-                        this.totalLogs = 0;
-                        this.totalPages = 0;
-                    }
+                    // 统一使用loadLogs方法处理所有筛选条件
+                    await this.loadLogs();
                 },
                 async clearLogFilter() {
                     this.selectedTaskId = '';
@@ -623,7 +607,8 @@
                     this.selectedTaskId = taskId;
                     this.currentView = 'logs';
                     this.currentPage = 1;
-                    await this.loadTaskLogs(taskId);
+                    // 统一使用loadLogs方法处理所有筛选条件
+                    await this.loadLogs();
                 },
                 showAddTaskModal() {
                     this.editingTask = false;
@@ -884,34 +869,19 @@
                     this.lastRefreshTime = currentTime;
                     this.currentPage = 1;
                     
-                    try {
-                        if (this.selectedTaskId) {
-                            // 如果选择了特定任务，刷新该任务的日志
-                            await this.loadTaskLogs(this.selectedTaskId);
-                        } else {
-                            // 否则刷新全部日志
-                            await this.loadLogs();
-                        }
-                    } catch (error) {
-                        // 如果刷新失败，重置冷却时间，允许用户重试
-                        this.lastRefreshTime = 0;
-                        console.error('刷新日志失败:', error);
-                    }
+                    // 统一使用loadLogs方法处理所有筛选条件
+                    await this.loadLogs();
                 },
                 async changePageSize() {
                     this.currentPage = 1;
-                    if (this.selectedTaskId) {
-                        // 如果选择了特定任务，刷新该任务的日志
-                        await this.loadTaskLogs(this.selectedTaskId);
-                    } else {
-                        // 否则刷新全部日志
-                        await this.loadLogs();
-                    }
+                    // 统一使用loadLogs方法处理所有筛选条件
+                    await this.loadLogs();
                 },
                 async goToPage(page) {
                     if (page < 1 || page > this.totalPages) return;
                     this.currentPage = page;
                     this.jumpToPage = page; // 同步跳转输入框的值
+                    // 统一使用loadLogs方法处理所有筛选条件
                     await this.loadLogs();
                 },
                 async goToJumpedPage() {
@@ -924,23 +894,17 @@
                 // 时间范围查询相关方法
                 async applyTimeRange() {
                     this.currentPage = 1;
-                    if (this.selectedTaskId) {
-                        await this.loadTaskLogs(this.selectedTaskId);
-                    } else {
-                        await this.loadLogs();
-                    }
+                    // 统一使用loadLogs方法处理所有筛选条件
+                    await this.loadLogs();
                 },
                 async clearTimeRange() {
                     this.timeRange.startTime = '';
                     this.timeRange.endTime = '';
                     this.currentPage = 1;
-                    if (this.selectedTaskId) {
-                        await this.loadTaskLogs(this.selectedTaskId);
-                    } else {
-                        await this.loadLogs();
-                    }
+                    // 统一使用loadLogs方法处理所有筛选条件
+                    await this.loadLogs();
                 },
-                // 日期时间格式化方法
+                // 日期时间格式化方法（保留此方法以防其他地方使用，但不再用于API调用）
                 formatDateTimeForAPI(dateTimeLocal) {
                     if (!dateTimeLocal) return '';
                     // 将本地时间格式转换为API需要的格式

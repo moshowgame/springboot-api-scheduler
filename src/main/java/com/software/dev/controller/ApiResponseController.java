@@ -22,9 +22,20 @@ public class ApiResponseController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime) {
-        List<ApiResponse> responses = apiResponseService.findByPageWithTimeRange(page, size, startTime, endTime);
-        int total = apiResponseService.countByTimeRange(startTime, endTime);
+            @RequestParam(required = false) String endTime,
+            @RequestParam(required = false) String taskId) {
+        
+        List<ApiResponse> responses;
+        int total;
+        
+        // 使用统一的方法处理所有筛选条件
+        if (taskId != null && !taskId.isEmpty()) {
+            responses = apiResponseService.findByPageWithConditions(page, size, taskId, startTime, endTime);
+            total = apiResponseService.countByConditions(taskId, startTime, endTime);
+        } else {
+            responses = apiResponseService.findByPageWithConditions(page, size, null, startTime, endTime);
+            total = apiResponseService.countByConditions(null, startTime, endTime);
+        }
         
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
@@ -36,19 +47,4 @@ public class ApiResponseController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/task/{taskId}")
-    public ResponseEntity<Map<String, Object>> getResponsesByTaskId(
-            @PathVariable String taskId,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime) {
-        List<ApiResponse> responses = apiResponseService.findByTaskIdWithTimeRange(taskId, startTime, endTime);
-        int total = apiResponseService.countByTaskIdWithTimeRange(taskId, startTime, endTime);
-        
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 200);
-        result.put("data", responses);
-        result.put("total", total);
-        result.put("message", "Success");
-        return ResponseEntity.ok(result);
-    }
 }

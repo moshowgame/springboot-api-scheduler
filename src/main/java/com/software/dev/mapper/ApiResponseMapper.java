@@ -8,27 +8,21 @@ import java.util.List;
 @Mapper
 public interface ApiResponseMapper {
     int insert(ApiResponse apiResponse);
-    
+
     List<ApiResponse> findByTaskId(@Param("taskId") String taskId);
-    
-    List<ApiResponse> findByTaskIdWithTimeRange(@Param("taskId") String taskId, 
-                                               @Param("startTime") String startTime, 
-                                               @Param("endTime") String endTime);
-    
+
+
     List<ApiResponse> findAll();
-    
-    List<ApiResponse> findByPage(@Param("offset") int offset, @Param("limit") int limit);
-    
-    List<ApiResponse> findByPageWithTimeRange(@Param("offset") int offset, 
-                                             @Param("limit") int limit, 
-                                             @Param("startTime") String startTime, 
-                                             @Param("endTime") String endTime);
-    
+
+    List<ApiResponse> findByPageWithConditions(@Param("offset") int offset,
+                                               @Param("limit") int limit,
+                                               @Param("taskId") String taskId,
+                                               @Param("startTime") String startTime,
+                                               @Param("endTime") String endTime);
+    int countByConditions(@Param("taskId") String taskId,
+                          @Param("startTime") String startTime,
+                          @Param("endTime") String endTime);
+
     int count();
-    
-    int countByTimeRange(@Param("startTime") String startTime, @Param("endTime") String endTime);
-    
-    int countByTaskIdWithTimeRange(@Param("taskId") String taskId, 
-                                   @Param("startTime") String startTime, 
-                                   @Param("endTime") String endTime);
+
 }
