@@ -19,4 +19,5 @@ public class ApiTask {
     private LocalDateTime updateTime;
     private LocalDateTime lastExecuteTime;
     private String assertions; // 断言配置JSON
+    private Boolean alertEnabled; // 警报是否启用
 }

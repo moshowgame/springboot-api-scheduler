@@ -18,4 +18,7 @@ public interface ApiTaskMapper {
     int deleteById(@Param("id") String id);
     
     List<ApiTask> findByStatus(@Param("status") String status);
+    
+    // 更新任务警报启用状态
+    int updateTaskAlertEnabled(@Param("taskId") String taskId, @Param("enabled") Boolean enabled);
 }

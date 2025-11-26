@@ -17,6 +17,7 @@
         <result property="updateTime" column="update_time"/>
         <result property="lastExecuteTime" column="last_execute_time"/>
         <result property="assertions" column="assertions"/>
+        <result property="alertEnabled" column="alert_enabled"/>
     </resultMap>
 
     <select id="findAll" resultMap="ApiTaskResult">
@@ -32,8 +33,8 @@
     </select>
 
     <insert id="insert" parameterType="com.software.dev.entity.ApiTask">
-        INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time, assertions)
-        VALUES (#{id}, #{taskName}, #{url}, #{method}, #{timeout}, #{headers}, #{parameters}, #{cronExpression}, #{status}, #{description}, NOW(), NOW(), #{assertions})
+        INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time, assertions, alert_enabled)
+        VALUES (#{id}, #{taskName}, #{url}, #{method}, #{timeout}, #{headers}, #{parameters}, #{cronExpression}, #{status}, #{description}, NOW(), NOW(), #{assertions}, #{alertEnabled})
     </insert>
 
     <update id="update" parameterType="com.software.dev.entity.ApiTask">
@@ -48,12 +49,17 @@
             status = #{status}, 
             description = #{description}, 
             update_time = NOW(),
-            assertions = #{assertions}
+            assertions = #{assertions},
+            alert_enabled = #{alertEnabled}
         WHERE id = #{id}
     </update>
 
     <delete id="deleteById" parameterType="String">
         DELETE FROM api_task WHERE id = #{id}
     </delete>
+    
+    <update id="updateTaskAlertEnabled">
+        UPDATE api_task SET alert_enabled = #{enabled} WHERE id = #{taskId}
+    </update>
 
 </mapper>
