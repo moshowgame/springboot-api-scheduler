@@ -26,19 +26,28 @@ public class ApiResponseServiceImpl implements ApiResponseService {
         return apiResponseMapper.findByTaskId(taskId);
     }
 
+
     @Override
     public List<ApiResponse> findAll() {
         return apiResponseMapper.findAll();
     }
 
+
+
     @Override
-    public List<ApiResponse> findByPage(int page, int size) {
+    public List<ApiResponse> findByPageWithConditions(int page, int size, String taskId, String startTime, String endTime) {
         int offset = (page - 1) * size;
-        return apiResponseMapper.findByPage(offset, size);
+        return apiResponseMapper.findByPageWithConditions(offset, size, taskId, startTime, endTime);
     }
 
     @Override
     public int count() {
         return apiResponseMapper.count();
+    }
+
+
+    @Override
+    public int countByConditions(String taskId, String startTime, String endTime) {
+        return apiResponseMapper.countByConditions(taskId, startTime, endTime);
     }
 }

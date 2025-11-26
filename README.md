@@ -12,12 +12,6 @@
 😄**No! 现在有了更加简单易用、轻量级的解决方案！**
 ➡️**SpringBoot-API-Scheduler** 专为API调度而生，开箱即用，零学习成本！
 
-<img src="{0CBBE51F-9282-42B8-8A02-2A33E3DB87DD}.png" alt="LIST" width="600"/><br>
-<img src="{68776847-753E-412B-B899-1DC7622D354E}.png" alt="LOG" width="600"/><br>
-<img src="{54583E38-DE3C-452A-BC5B-DEBDB2915411}.png" alt="EDIT" width="200"/><br>
-
-# 🏆Author作者
-Powered by Moshow郑锴 , Show more on CSDN https://zhengkai.blog.csdn.net/ | 公众号【软件开发大百科】
 
 ### 🎯 核心优势
 
@@ -27,6 +21,16 @@ Powered by Moshow郑锴 , Show more on CSDN https://zhengkai.blog.csdn.net/ | �
 - **🔧 易维护**: 标准SpringBoot架构，代码清晰易懂
 - **📊 完整日志**: 详细的请求响应记录，便于问题排查
 - **🔄 热更新**: 支持动态添加/修改任务，无需重启服务
+
+<img src="{DB200B31-9734-4C8D-B94B-F319AC77D6C1}.png" alt="登录" width="600"/><br>
+<img src="{0CBBE51F-9282-42B8-8A02-2A33E3DB87DD}.png" alt="任务列表" width="600"/><br>
+<img src="{68776847-753E-412B-B899-1DC7622D354E}.png" alt="日志" width="600"/><br>
+<img src="{54583E38-DE3C-452A-BC5B-DEBDB2915411}.png" alt="任务详情" width="200"/><br>
+<img src="{a7bb4bf8-99e7-4003-80ba-2a53194bcec0}.png" alt="断言" width="200"/><br>
+
+## 🏆Author作者
+Powered by Moshow郑锴 , Show more on CSDN https://zhengkai.blog.csdn.net/ | 公众号【软件开发大百科】
+
 
 ---
 
@@ -251,11 +255,13 @@ mybatis:
 ### v2.0 (2025~Now)
 ✨ spring-boot-UrlTaskScheduler全新改名为springboot-api-scheduler
 
-| 日期 | 更新内容                                                                                                    |
-|------|---------------------------------------------------------------------------------------------------------|
+| 日期         | 更新内容                                                                                                        |
+|------------|-------------------------------------------------------------------------------------------------------------|
+| 2025-11-26 | 🔧 修复日志界面筛选和分页功能                                                                                            |
+| 2025-11-25 | 🆙 日志界面新增日期查询功能以及刷新功能、刷新1s防抖功能、分页功能                                                                         |
 | 2025-11-24 | 🔧 修复Maven打包JAR问题 🔧 OkHttpClient配置忽略SSL 🆙 日志界面支持筛选功能,也支持从任务列表点击日志功能跳转 🆙 任务列表界面新增复制功能,一键复制API 🆙 断言设置指引优化 |
-| 2025-11-23 | ✅ 断言功能重构 [ASSERTION_GUIDE.md](ASSERTION_GUIDE.md)                                                       |
-| 2025-11-22 | ✅ 重构项目 ✅ 用户登录功能                                                                                         |
+| 2025-11-23 | ✅ 断言功能重构 [ASSERTION_GUIDE.md](ASSERTION_GUIDE.md)                                                           |
+| 2025-11-22 | ✅ 重构项目 ✅ 用户登录功能                                                                                             |
 
 
 ### v1.0 (2019~2022)

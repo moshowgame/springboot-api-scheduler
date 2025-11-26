@@ -9,17 +9,21 @@ import java.util.List;
 @Mapper
 public interface ApiResponseMapper {
     int insert(ApiResponse apiResponse);
-    
+
     List<ApiResponse> findByTaskId(@Param("taskId") String taskId);
-    
+
+
     List<ApiResponse> findAll();
-    
-    List<ApiResponse> findByPage(@Param("offset") int offset, @Param("limit") int limit);
-    
+
+    List<ApiResponse> findByPageWithConditions(@Param("offset") int offset,
+                                               @Param("limit") int limit,
+                                               @Param("taskId") String taskId,
+                                               @Param("startTime") String startTime,
+                                               @Param("endTime") String endTime);
+    int countByConditions(@Param("taskId") String taskId,
+                          @Param("startTime") String startTime,
+                          @Param("endTime") String endTime);
+
     int count();
-    
-    // 根据任务ID和时间范围查询响应记录
-    List<ApiResponse> selectByTaskIdAndTimeRange(@Param("taskId") String taskId, 
-                                               @Param("startTime") LocalDateTime startTime, 
-                                               @Param("endTime") LocalDateTime endTime);
+
 }

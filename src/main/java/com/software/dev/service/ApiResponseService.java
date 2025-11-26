@@ -7,10 +7,14 @@ public interface ApiResponseService {
     int save(ApiResponse apiResponse);
     
     List<ApiResponse> findByTaskId(String taskId);
-    
+
     List<ApiResponse> findAll();
-    
-    List<ApiResponse> findByPage(int page, int size);
+
+    // 新增统一处理所有条件的方法
+    List<ApiResponse> findByPageWithConditions(int page, int size, String taskId, String startTime, String endTime);
     
     int count();
+    
+    // 新增统一计数方法
+    int countByConditions(String taskId, String startTime, String endTime);
 }
