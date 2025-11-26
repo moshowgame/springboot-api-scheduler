@@ -17,6 +17,9 @@ public interface AlertConfigMapper {
     // 根据ID查询警报配置
     AlertConfig selectById(@Param("id") String id);
     
+    // 查询所有警报配置
+    List<AlertConfig> selectAll();
+    
     // 根据任务ID查询警报配置
     AlertConfig selectByTaskId(@Param("taskId") String taskId);
     
@@ -25,6 +28,9 @@ public interface AlertConfigMapper {
     
     // 删除警报配置
     int deleteById(@Param("id") String id);
+    
+    // 删除所有警报配置
+    int deleteAll();
     
     // 删除任务相关的警报配置
     int deleteByTaskId(@Param("taskId") String taskId);

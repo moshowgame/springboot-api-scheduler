@@ -33,6 +33,14 @@
         WHERE id = #{id}
     </select>
     
+    <select id="selectAll" resultType="com.software.dev.entity.AlertConfig">
+        SELECT id, task_id as taskId, failure_rate_threshold as failureRateThreshold, 
+               check_interval as checkInterval, api_url as apiUrl, http_method as httpMethod, 
+               headers, body, enabled, create_time as createTime, update_time as updateTime, 
+               last_check_time as lastCheckTime
+        FROM alert_config
+    </select>
+    
     <select id="selectByTaskId" resultType="com.software.dev.entity.AlertConfig">
         SELECT id, task_id as taskId, failure_rate_threshold as failureRateThreshold, 
                check_interval as checkInterval, api_url as apiUrl, http_method as httpMethod, 
@@ -53,6 +61,10 @@
     
     <delete id="deleteById">
         DELETE FROM alert_config WHERE id = #{id}
+    </delete>
+    
+    <delete id="deleteAll">
+        DELETE FROM alert_config
     </delete>
     
     <delete id="deleteByTaskId">

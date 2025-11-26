@@ -31,6 +31,10 @@
     <select id="findByStatus" parameterType="String" resultMap="ApiTaskResult">
         SELECT * FROM api_task WHERE status = #{status} ORDER BY create_time DESC
     </select>
+    
+    <select id="findAlertEnabledTasks" parameterType="Boolean" resultMap="ApiTaskResult">
+        SELECT * FROM api_task WHERE alert_enabled = #{alertEnabled} ORDER BY create_time DESC
+    </select>
 
     <insert id="insert" parameterType="com.software.dev.entity.ApiTask">
         INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time, assertions, alert_enabled)

@@ -49,8 +49,9 @@ public class AlertServiceImpl implements AlertService {
     @Transactional
     public boolean saveAlertConfig(AlertConfig alertConfig) {
         try {
-            // 检查是否已存在该任务的警报配置
-            AlertConfig existingConfig = alertConfigMapper.selectByTaskId(alertConfig.getTaskId());
+            // 检查是否已存在警报配置（整个系统只保留一条配置记录）
+            List<AlertConfig> existingConfigs = alertConfigMapper.selectAll();
+            AlertConfig existingConfig = existingConfigs.isEmpty() ? null : existingConfigs.get(0);
 
             if (existingConfig != null) {
                 // 更新现有配置
@@ -107,25 +108,28 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    @Scheduled(fixedRate = 60000) // 每分钟执行一次
+    @Scheduled(fixedRate = 600000) // 每小时执行一次
     public void checkAndTriggerAlerts() {
         try {
-            List<AlertConfig> enabledConfigs = getAllEnabledAlertConfigs();
-
-            for (AlertConfig config : enabledConfigs) {
-                // 检查是否到了检查时间
-                LocalDateTime now = LocalDateTime.now();
-                LocalDateTime lastCheckTime = config.getLastCheckTime();
-
-                if (lastCheckTime == null ||
-                        lastCheckTime.plusMinutes(config.getCheckInterval()).isBefore(now)) {
-
-                    // 检查任务在检查间隔时间内的断言失败率
-                    checkTaskFailureRate(config);
-
-                    // 更新最后检查时间
-                    alertConfigMapper.updateLastCheckTime(config.getId());
-                }
+            // 获取启用警报的任务列表
+            List<ApiTask> alertEnabledTasks = apiTaskMapper.findAlertEnabledTasks(true);
+            
+            // 获取警报配置（系统中只有一条配置记录）
+            List<AlertConfig> allConfigs = alertConfigMapper.selectAll();
+            if (allConfigs.isEmpty()) {
+                log.info("未找到警报配置，跳过检查");
+                return;
+            }
+            AlertConfig config = allConfigs.get(0);
+            
+            for (ApiTask task : alertEnabledTasks) {
+                // 检查任务在检查间隔时间内的断言失败率
+                checkTaskFailureRate(config, task);
+            }
+            
+            // 更新最后检查时间
+            if (!alertEnabledTasks.isEmpty()) {
+                alertConfigMapper.updateLastCheckTime(config.getId());
             }
         } catch (Exception e) {
             log.error("检查警报失败", e);
@@ -135,16 +139,16 @@ public class AlertServiceImpl implements AlertService {
     /**
      * 检查指定任务的失败率是否超过配置的阈值，如果超过则触发警报
      *
-     * @param config 警报配置，包含任务ID、检查间隔和失败率阈值等信息
+     * @param config 警报配置，包含检查间隔和失败率阈值等信息
+     * @param task 需要检查的任务
      * @throws Exception 当查询响应记录或计算失败率过程中发生错误时抛出
      */
-
-    private void checkTaskFailureRate(AlertConfig config) {
+    private void checkTaskFailureRate(AlertConfig config, ApiTask task) {
         try {
             // 获取过去N分钟内的响应记录（N为配置的检查间隔）
             LocalDateTime timeFrom = LocalDateTime.now().minusMinutes(config.getCheckInterval());
             List<ApiResponse> responses = apiResponseMapper.findByPageWithConditions(1, 1000,
-                    config.getTaskId(), timeFrom.toString(), LocalDateTime.now().toString());
+                    task.getId(), timeFrom.toString(), LocalDateTime.now().toString());
 
             if (responses.isEmpty()) {
                 return; // 没有执行记录，不触发警报
@@ -161,18 +165,15 @@ public class AlertServiceImpl implements AlertService {
             // 检查是否超过阈值
             if (failureRate >= config.getFailureRateThreshold()) {
                 // 触发警报
-                triggerAlert(config, failureRate, (int) failureCount, totalCount);
+                triggerAlert(config, task, failureRate, (int) failureCount, totalCount);
             }
         } catch (Exception e) {
             log.error("检查任务失败率失败", e);
         }
     }
 
-    private void triggerAlert(AlertConfig config, int failureRate, int failureCount, int totalCount) {
+    private void triggerAlert(AlertConfig config, ApiTask task, int failureRate, int failureCount, int totalCount) {
         try {
-            // 获取任务信息
-            ApiTask task = apiTaskMapper.findById(config.getTaskId());
-
             // 构建警报消息
             String alertMessage = String.format(
                     "任务 [%s] 在过去%d分钟内的断言失败率为 %d%% (%d/%d)，超过阈值 %d%%",
@@ -184,7 +185,7 @@ public class AlertServiceImpl implements AlertService {
             if (requestBody != null && !requestBody.isEmpty()) {
                 // 替换变量
                 requestBody = requestBody
-                        .replace("${taskId}", config.getTaskId())
+                        .replace("${taskId}", task.getId())
                         .replace("${taskName}", task.getTaskName())
                         .replace("${failureRate}", failureRate + "%")
                         .replace("${failureCount}", String.valueOf(failureCount))
@@ -217,7 +218,7 @@ public class AlertServiceImpl implements AlertService {
             // 记录警报
             AlertRecord alertRecord = new AlertRecord();
             alertRecord.setId(UUID.randomUUID().toString());
-            alertRecord.setTaskId(config.getTaskId());
+            alertRecord.setTaskId(task.getId());
             alertRecord.setTaskName(task.getTaskName());
             alertRecord.setFailureRate(failureRate);
             alertRecord.setFailureCount(failureCount);
