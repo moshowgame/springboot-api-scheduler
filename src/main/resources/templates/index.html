@@ -532,7 +532,7 @@
                             <h6 class="alert-heading">警报功能说明</h6>
                             <p>当任务在指定时间内的断言失败率超过阈值时，系统将自动发送HTTP请求到您配置的API地址。</p>
                             <ul>
-                                <li>时间窗口：检查过去1小时内的执行记录</li>
+                                <li>时间窗口：检查过去N分钟内的执行记录（N为检查间隔配置的分钟数）</li>
                                 <li>失败率计算：失败次数 / 总执行次数 × 100%</li>
                                 <li>触发条件：失败率超过设定的阈值</li>
                             </ul>
@@ -552,7 +552,7 @@
                                     <label class="form-label">检查间隔 (分钟)</label>
                                     <input type="number" class="form-control" v-model="alertConfig.checkInterval" 
                                            min="5" max="1440" placeholder="例如: 30">
-                                    <div class="form-text">系统检查警报的频率</div>
+                                    <div class="form-text">系统检查警报的频率，同时决定检查的时间窗口</div>
                                 </div>
                             </div>
                         </div>
