@@ -643,7 +643,7 @@
                     logDetailModal: null,
                     assertionConfigModal: null,
                     alertConfigModal: null,
-                    currentUser: ''
+                    currentUser: '',
                     // 分页相关
                     currentPage: 1,
                     pageSize: 50,
@@ -1103,6 +1103,7 @@
                         console.error('Failed to disable alerts:', error);
                         alert('批量禁用警报失败');
                     }
+                },
                 // 分页相关方法
                 async refreshLogs() {
                     const currentTime = Date.now();

@@ -136,8 +136,8 @@ public class AlertServiceImpl implements AlertService {
         try {
             // 获取过去一小时内的响应记录
             LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
-            List<ApiResponse> responses = apiResponseMapper.selectByTaskIdAndTimeRange(
-                config.getTaskId(), oneHourAgo, LocalDateTime.now());
+            List<ApiResponse> responses = apiResponseMapper.findByPageWithConditions(1, 1000,
+                config.getTaskId(), oneHourAgo.toString(), LocalDateTime.now().toString());
             
             if (responses.isEmpty()) {
                 return; // 没有执行记录，不触发警报
