@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.software.dev.mapper.AlertRecordMapper">
+    
+    <insert id="insert" parameterType="com.software.dev.entity.AlertRecord">
+        INSERT INTO alert_record (id, task_id, task_name, failure_rate, failure_count, 
+                               total_count, alert_message, api_url, response, alert_time, create_time)
+        VALUES (#{id}, #{taskId}, #{taskName}, #{failureRate}, #{failureCount}, 
+                #{totalCount}, #{alertMessage}, #{apiUrl}, #{response}, #{alertTime}, #{createTime})
+    </insert>
+    
+    <select id="selectById" resultType="com.software.dev.entity.AlertRecord">
+        SELECT id, task_id as taskId, task_name as taskName, failure_rate as failureRate, 
+               failure_count as failureCount, total_count as totalCount, alert_message as alertMessage, 
+               api_url as apiUrl, response, alert_time as alertTime, create_time as createTime
+        FROM alert_record
+        WHERE id = #{id}
+    </select>
+    
+    <select id="selectByTaskId" resultType="com.software.dev.entity.AlertRecord">
+        SELECT id, task_id as taskId, task_name as taskName, failure_rate as failureRate, 
+               failure_count as failureCount, total_count as totalCount, alert_message as alertMessage, 
+               api_url as apiUrl, response, alert_time as alertTime, create_time as createTime
+        FROM alert_record
+        WHERE task_id = #{taskId}
+        ORDER BY alert_time DESC
+    </select>
+    
+    <select id="selectByTimeRange" resultType="com.software.dev.entity.AlertRecord">
+        SELECT id, task_id as taskId, task_name as taskName, failure_rate as failureRate, 
+               failure_count as failureCount, total_count as totalCount, alert_message as alertMessage, 
+               api_url as apiUrl, response, alert_time as alertTime, create_time as createTime
+        FROM alert_record
+        WHERE alert_time BETWEEN #{startTime} AND #{endTime}
+        ORDER BY alert_time DESC
+    </select>
+    
+    <select id="selectAllWithFilters" resultType="com.software.dev.entity.AlertRecord">
+        SELECT id, task_id as taskId, task_name as taskName, failure_rate as failureRate, 
+               failure_count as failureCount, total_count as totalCount, alert_message as alertMessage, 
+               api_url as apiUrl, response, alert_time as alertTime, create_time as createTime
+        FROM alert_record
+        <where>
+            <if test="taskName != null and taskName != ''">
+                task_name LIKE CONCAT('%', #{taskName}, '%')
+            </if>
+        </where>
+        ORDER BY alert_time DESC
+    </select>
+    
+    <select id="selectByPageWithConditions" resultType="com.software.dev.entity.AlertRecord">
+        SELECT id, task_id as taskId, task_name as taskName, failure_rate as failureRate, 
+               failure_count as failureCount, total_count as totalCount, alert_message as alertMessage, 
+               api_url as apiUrl, response, alert_time as alertTime, create_time as createTime
+        FROM alert_record
+        <where>
+            <if test="taskName != null and taskName != ''">
+                task_name LIKE CONCAT('%', #{taskName}, '%')
+            </if>
+        </where>
+        ORDER BY alert_time DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    
+    <select id="countWithConditions" resultType="int">
+        SELECT COUNT(*) FROM alert_record
+        <where>
+            <if test="taskName != null and taskName != ''">
+                task_name LIKE CONCAT('%', #{taskName}, '%')
+            </if>
+        </where>
+    </select>
+
+    <delete id="deleteBeforeTime">
+    <![CDATA[
+        DELETE FROM alert_record WHERE alert_time < #{time}
+    ]]>
+</delete>
+    
+</mapper>

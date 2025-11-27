@@ -1,111 +1,190 @@
--- 创建数据库
-CREATE DATABASE api_scheduler;
+-- public.alert_config definition
 
--- 连接到数据库
-\c api_scheduler;
+-- Drop table
 
--- 创建API任务表
-CREATE TABLE IF NOT EXISTS api_task (
-    id VARCHAR(50) PRIMARY KEY,
-    task_name VARCHAR(255) NOT NULL,
-    url TEXT NOT NULL,
-    method VARCHAR(10) NOT NULL DEFAULT 'GET',
-    timeout INT DEFAULT 30000,
-    headers TEXT,
-    parameters TEXT,
-    cron_expression VARCHAR(100) NOT NULL,
-    status VARCHAR(20) DEFAULT 'PAUSED',
-    description TEXT,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_execute_time TIMESTAMP,
-    assertions TEXT
+-- DROP TABLE public.alert_config;
+
+CREATE TABLE public.alert_config (
+	id varchar(50) NOT NULL,
+	task_id varchar(50) NULL,
+	failure_rate_threshold int4 DEFAULT 50 NOT NULL,
+	check_interval int4 DEFAULT 30 NOT NULL,
+	api_url text NOT NULL,
+	http_method varchar(10) DEFAULT 'POST'::character varying NOT NULL,
+	headers text NULL,
+	body text NULL,
+	enabled bool DEFAULT false NULL,
+	create_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	update_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	last_check_time timestamp NULL,
+	CONSTRAINT alert_config_pkey PRIMARY KEY (id),
+	CONSTRAINT alert_config_task_id_key UNIQUE (task_id)
+);
+CREATE INDEX idx_alert_config_task_id ON public.alert_config USING btree (task_id);
+
+-- Table Triggers
+
+create trigger update_alert_config_update_time before
+update
+    on
+    public.alert_config for each row execute function update_updated_time_column();
+
+
+-- public.alert_record definition
+
+-- Drop table
+
+-- DROP TABLE public.alert_record;
+
+CREATE TABLE public.alert_record (
+	id varchar(50) NOT NULL,
+	task_id varchar(50) NOT NULL,
+	task_name varchar(255) NOT NULL,
+	failure_rate int4 NOT NULL,
+	failure_count int4 NOT NULL,
+	total_count int4 NOT NULL,
+	alert_message text NULL,
+	api_url text NULL,
+	response text NULL,
+	alert_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	create_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT alert_record_pkey PRIMARY KEY (id)
+);
+CREATE INDEX idx_alert_record_alert_time ON public.alert_record USING btree (alert_time);
+CREATE INDEX idx_alert_record_task_id ON public.alert_record USING btree (task_id);
+
+
+-- public.api_assertion definition
+
+-- Drop table
+
+-- DROP TABLE public.api_assertion;
+
+CREATE TABLE public.api_assertion (
+	id varchar(50) NOT NULL,
+	task_id varchar(50) NOT NULL,
+	response_id varchar(50) NULL,
+	assertion_type varchar(20) NOT NULL,
+	expected_value text NOT NULL,
+	actual_value text NULL,
+	passed bool NULL,
+	error_message text NULL,
+	sort_order int4 DEFAULT 0 NULL,
+	create_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT api_assertion_pkey PRIMARY KEY (id),
+	CONSTRAINT uk_api_assertion_task_id UNIQUE (task_id)
+);
+CREATE INDEX idx_api_assertion_response_id ON public.api_assertion USING btree (response_id);
+
+
+-- public.api_response definition
+
+-- Drop table
+
+-- DROP TABLE public.api_response;
+
+CREATE TABLE public.api_response (
+	id varchar(50) DEFAULT gen_random_uuid() NOT NULL,
+	task_id varchar(50) NOT NULL,
+	request_url text NOT NULL,
+	request_method varchar(10) NOT NULL,
+	request_headers text NULL,
+	request_params text NULL,
+	response_code int4 NULL,
+	response_body text NULL,
+	response_time int8 NULL,
+	status varchar(20) NOT NULL,
+	error_message text NULL,
+	execute_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	assertion_result text NULL,
+	all_assertions_passed bool NULL,
+	CONSTRAINT api_response_pkey PRIMARY KEY (id)
+);
+CREATE INDEX idx_api_response_execute_time ON public.api_response USING btree (execute_time);
+CREATE INDEX idx_api_response_task_id ON public.api_response USING btree (task_id);
+
+
+-- public.api_task definition
+
+-- Drop table
+
+-- DROP TABLE public.api_task;
+
+CREATE TABLE public.api_task (
+	id varchar(50) DEFAULT gen_random_uuid() NOT NULL,
+	task_name varchar(255) NOT NULL,
+	url text NOT NULL,
+	"method" varchar(10) DEFAULT 'GET'::character varying NOT NULL,
+	timeout int4 DEFAULT 30000 NULL,
+	headers text NULL,
+	parameters text NULL,
+	cron_expression varchar(100) NOT NULL,
+	status varchar(20) DEFAULT 'PAUSED'::character varying NULL,
+	description text NULL,
+	create_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	update_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	last_execute_time timestamp NULL,
+	assertions text NULL,
+	alert_enabled bool DEFAULT false NULL,
+	CONSTRAINT api_task_pkey PRIMARY KEY (id)
 );
 
--- 创建更新时间触发器函数
-CREATE OR REPLACE FUNCTION update_updated_time_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.update_time = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- Table Triggers
 
--- 创建更新时间触发器
-CREATE TRIGGER update_api_task_update_time 
-    BEFORE UPDATE ON api_task 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_time_column();
+create trigger update_api_task_update_time before
+update
+    on
+    public.api_task for each row execute function update_updated_time_column();
 
--- 创建用户表
-CREATE TABLE IF NOT EXISTS sys_user (
-    id VARCHAR(50) PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    enabled BOOLEAN DEFAULT true,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+-- public.sys_user definition
+
+-- Drop table
+
+-- DROP TABLE public.sys_user;
+
+CREATE TABLE public.sys_user (
+	id varchar(50) NOT NULL,
+	username varchar(50) NOT NULL,
+	"password" varchar(100) NOT NULL,
+	enabled bool DEFAULT true NULL,
+	create_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	update_time timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+	CONSTRAINT sys_user_pkey PRIMARY KEY (id),
+	CONSTRAINT sys_user_username_key UNIQUE (username)
 );
+CREATE INDEX idx_user_username ON public.sys_user USING btree (username);
 
--- 创建更新时间触发器函数（如果不存在）
-CREATE OR REPLACE FUNCTION update_updated_time_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.update_time = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- Table Triggers
 
--- 创建用户表更新时间触发器
-CREATE TRIGGER update_user_update_time
-    BEFORE UPDATE ON sys_user
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_time_column();
+create trigger update_user_update_time before
+update
+    on
+    public.sys_user for each row execute function update_updated_time_column();
 
--- 创建API响应日志表
-CREATE TABLE IF NOT EXISTS api_response (
-    id VARCHAR(50) PRIMARY KEY,
-    task_id VARCHAR(50) NOT NULL,
-    request_url TEXT NOT NULL,
-    request_method VARCHAR(10) NOT NULL,
-    request_headers TEXT,
-    request_params TEXT,
-    response_code INT,
-    response_body TEXT,
-    response_time BIGINT,
-    status VARCHAR(20) NOT NULL,
-    error_message TEXT,
-    execute_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    assertion_result TEXT,
-    all_assertions_passed BOOLEAN
-);
 
--- 创建断言表
-CREATE TABLE IF NOT EXISTS api_assertion (
-    id VARCHAR(50) PRIMARY KEY,
-    task_id VARCHAR(50) NOT NULL UNIQUE,
-    response_id VARCHAR(50),
-    assertion_type VARCHAR(20) NOT NULL,
-    expected_value TEXT NOT NULL,
-    actual_value TEXT,
-    passed BOOLEAN,
-    error_message TEXT,
-    sort_order INT DEFAULT 0,
-    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- 导入用户
+INSERT INTO public.sys_user
+(id, username, "password", enabled, create_time, update_time)
+VALUES('admin-001', 'admin', '0192023a7bbd73250516f069df18b500', true, '2025-11-23 23:42:19.946', '2025-11-23 23:42:19.946');
 
--- 创建索引
-CREATE INDEX IF NOT EXISTS idx_user_username ON sys_user(username);
-CREATE INDEX IF NOT EXISTS idx_api_response_task_id ON api_response(task_id);
-CREATE INDEX IF NOT EXISTS idx_api_response_execute_time ON api_response(execute_time);
-CREATE INDEX IF NOT EXISTS idx_api_assertion_task_id ON api_assertion(task_id);
-CREATE INDEX IF NOT EXISTS idx_api_assertion_response_id ON api_assertion(response_id);
+-- 导入警报
+INSERT INTO public.alert_config
+(id, task_id, failure_rate_threshold, check_interval, api_url, http_method, headers, body, enabled, create_time, update_time, last_check_time)
+VALUES('4bf6930f-b2b4-414f-afcb-d93fbadd0704', NULL, 50, 30, 'http://localhost:8080/demo/test?alert=1', 'GET', '{"Content-Type": "application/json"}', '{"message": "API任务断言失败率过高", "taskId": "${taskId}", "taskName": "${taskName}", "failureRate": "${failureRate}%"}', true, '2025-11-27 21:36:27.227', '2025-11-27 22:07:38.420', '2025-11-27 22:07:38.420');
 
--- 插入默认用户数据 (密码: admin123, MD5加密后)
-INSERT INTO sys_user (id, username, password, enabled) VALUES
-('admin-001', 'admin', '0192023a7bbd73250516f069df18b500', true);
+-- 导入断言
+INSERT INTO public.api_assertion
+(id, task_id, response_id, assertion_type, expected_value, actual_value, passed, error_message, sort_order, create_time)
+VALUES('a53602e7-e910-4e34-9d77-ea457231cb6b', '45abb91a-3499-4ae6-9cf8-2bc7a62f7e62', NULL, 'HTTP_CODE', '200', NULL, NULL, NULL, NULL, '2025-11-27 21:30:48.040');
+INSERT INTO public.api_assertion
+(id, task_id, response_id, assertion_type, expected_value, actual_value, passed, error_message, sort_order, create_time)
+VALUES('b2bed570-e97d-4d98-842a-c9174137e142', 'd9bce151-2bf9-4658-9f36-c167bfa90735', NULL, 'JSON_CONTAINS', '200', NULL, NULL, NULL, NULL, '2025-11-27 21:30:53.950');
 
--- 插入示例数据
-INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description) VALUES
-('550e8400-e29b-41d4-a716-446655440001', '示例GET任务', 'http://localhost:8080/demo/test', 'GET', 30000, '{"User-Agent": "API-Scheduler"}', '{"param1": "value1"}', '0 */5 * * * ?', 'PAUSED', '每5分钟执行一次的GET请求示例'),
-('550e8400-e29b-41d4-a716-446655440002', '示例POST任务', 'http://localhost:8080/demo/test', 'POST', 30000, '{"Content-Type": "application/json"}', '{"key": "value"}', '0 0/10 * * * ?', 'PAUSED', '每10分钟执行一次的POST请求示例');
+-- 导入任务
+INSERT INTO public.api_task
+(id, task_name, url, "method", timeout, headers, parameters, cron_expression, status, description, create_time, update_time, last_execute_time, assertions, alert_enabled)
+VALUES('45abb91a-3499-4ae6-9cf8-2bc7a62f7e62', 'TEST GET (ERROR)', 'http://localhost:8080/demo2/test222?my=1', 'GET', 30000, '{"myheader":"123456"}', '{"myvalue":"123456"}', '0 */1 * * * ?', 'RUNNING', '测试ERROR场景', '2025-11-27 21:28:29.418', '2025-11-27 21:36:33.894', NULL, NULL, true);
+INSERT INTO public.api_task
+(id, task_name, url, "method", timeout, headers, parameters, cron_expression, status, description, create_time, update_time, last_execute_time, assertions, alert_enabled)
+VALUES('d9bce151-2bf9-4658-9f36-c167bfa90735', 'TEST GET', 'http://localhost:8080/demo/test?my=1', 'GET', 30000, '{"myheader":"123456"}', '{"myvalue":"123456"}', '0 */1 * * * ?', 'RUNNING', '', '2025-11-27 21:28:13.215', '2025-11-27 21:36:33.905', NULL, NULL, true);

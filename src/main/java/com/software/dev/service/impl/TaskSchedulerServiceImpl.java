@@ -19,6 +19,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
@@ -129,6 +131,37 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
         log.info("Loaded {} running tasks", tasks.size());
     }
 
+    /**
+     * 构建带参数的URL
+     * @param baseUrl 基础URL
+     * @param params 参数Map
+     * @return 带参数的完整URL
+     */
+    private String buildUrlWithParams(String baseUrl, Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            return baseUrl;
+        }
+
+        StringBuilder urlBuilder = new StringBuilder(baseUrl);
+        boolean hasQuery = baseUrl.contains("?");
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            try {
+                String key = URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name());
+                String value = URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name());
+                if (!hasQuery) {
+                    urlBuilder.append("?");
+                    hasQuery = true;
+                } else {
+                    urlBuilder.append("&");
+                }
+                urlBuilder.append(key).append("=").append(value);
+            } catch (Exception e) {
+                log.warn("Failed to encode URL parameter: {}={}", entry.getKey(), entry.getValue(), e);
+            }
+        }
+        return urlBuilder.toString();
+    }
+
     private void executeTask(ApiTask task) {
         log.info("Executing task: {}", task.getTaskName());
         
@@ -143,7 +176,23 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
         long startTime = System.currentTimeMillis();
         
         try {
-            Request.Builder requestBuilder = new Request.Builder().url(task.getUrl());
+            // 解析参数
+            Map<String, String> params = null;
+            if (task.getParameters() != null && !task.getParameters().isEmpty()) {
+                try {
+                    params = JSON.parseObject(task.getParameters(), Map.class);
+                } catch (Exception e) {
+                    log.warn("Failed to parse parameters for task: {}", task.getTaskName(), e);
+                }
+            }
+            
+            // 构建带参数的URL（仅对GET请求）
+            String requestUrl = task.getUrl();
+            if ("GET".equalsIgnoreCase(task.getMethod()) && params != null && !params.isEmpty()) {
+                requestUrl = buildUrlWithParams(task.getUrl(), params);
+            }
+            
+            Request.Builder requestBuilder = new Request.Builder().url(requestUrl);
             
             // Set method
             switch (task.getMethod().toUpperCase()) {
@@ -151,7 +200,9 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
                     requestBuilder.get();
                     break;
                 case "POST":
-                    RequestBody body = RequestBody.create("", MediaType.parse("application/json; charset=utf-8"));
+                    // POST请求使用请求体
+                    String postBody = task.getParameters();
+                    RequestBody body = RequestBody.create(postBody != null ? postBody : "", MediaType.parse("application/json; charset=utf-8"));
                     requestBuilder.post(body);
                     break;
                 default:
