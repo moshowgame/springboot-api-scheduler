@@ -34,6 +34,19 @@
         WHERE alert_time BETWEEN #{startTime} AND #{endTime}
         ORDER BY alert_time DESC
     </select>
+    
+    <select id="selectAllWithFilters" resultType="com.software.dev.entity.AlertRecord">
+        SELECT id, task_id as taskId, task_name as taskName, failure_rate as failureRate, 
+               failure_count as failureCount, total_count as totalCount, alert_message as alertMessage, 
+               api_url as apiUrl, response, alert_time as alertTime, create_time as createTime
+        FROM alert_record
+        <where>
+            <if test="taskName != null and taskName != ''">
+                task_name LIKE CONCAT('%', #{taskName}, '%')
+            </if>
+        </where>
+        ORDER BY alert_time DESC
+    </select>
 
     <delete id="deleteBeforeTime">
     <![CDATA[

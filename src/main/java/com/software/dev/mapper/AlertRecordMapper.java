@@ -24,4 +24,7 @@ public interface AlertRecordMapper {
     
     // 删除指定时间之前的警报记录
     int deleteBeforeTime(@Param("time") LocalDateTime time);
+    
+    // 查询所有警报记录，支持按任务名称筛选和按时间倒序排列
+    List<AlertRecord> selectAllWithFilters(@Param("taskName") String taskName);
 }

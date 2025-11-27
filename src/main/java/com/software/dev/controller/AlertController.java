@@ -139,4 +139,25 @@ public class AlertController {
             return ResponseEntity.status(500).body(response);
         }
     }
+    
+    /**
+     * 获取所有警报记录，支持按任务名称筛选
+     */
+    @GetMapping("/records")
+    public ResponseEntity<Map<String, Object>> getAllAlertRecords(@RequestParam(required = false) String taskName) {
+        try {
+            List<AlertRecord> records = alertService.getAllAlertRecords(taskName);
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 200);
+            response.put("data", records);
+            response.put("message", "获取警报记录成功");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("获取警报记录失败", e);
+            Map<String, Object> response = new HashMap<>();
+            response.put("code", 500);
+            response.put("message", "获取警报记录失败: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 }

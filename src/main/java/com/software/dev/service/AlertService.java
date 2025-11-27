@@ -24,6 +24,9 @@ public interface AlertService {
     // 获取任务的警报记录
     List<AlertRecord> getAlertRecordsByTaskId(String taskId);
     
+    // 获取所有警报记录，支持筛选
+    List<AlertRecord> getAllAlertRecords(String taskName);
+    
     // 清理旧的警报记录
     void cleanOldAlertRecords();
 }

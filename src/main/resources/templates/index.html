@@ -16,6 +16,7 @@
                 <div class="navbar-nav me-auto">
                     <a class="nav-link" href="#" @click="showTasks">📋 任务管理</a>
                     <a class="nav-link" href="#" @click="showLogs">📊 执行日志</a>
+                    <a class="nav-link" href="#" @click="showAlerts">🔔 警报记录</a>
                 </div>
                 <div class="navbar-nav">
                     <span class="navbar-text me-3">👤 {{ currentUser }}</span>
@@ -312,6 +313,61 @@
                                     </li>
                                 </ul>
                             </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 警报记录页面 -->
+        <div v-if="currentView === 'alerts'" class="mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>🔔 警报记录</h5>
+                                <div class="d-flex align-items-center">
+                                    <input type="text" class="form-control me-2" placeholder="按任务名称筛选" 
+                                           v-model="alertFilterTaskName" style="width: 250px;">
+                                    <button class="btn btn-primary" @click="loadAlertRecords">
+                                        <i class="fas fa-search me-1"></i>筛选
+                                    </button>
+                                    <button class="btn btn-outline-secondary ms-2" @click="clearAlertFilter">
+                                        <i class="fas fa-times me-1"></i>清除
+                                    </button>
+                                    <button class="btn btn-primary ms-2" @click="loadAlertRecords">
+                                        <i class="fas fa-sync-alt me-1"></i>刷新
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>任务名称</th>
+                                        <th>警报消息</th>
+                                        <th>失败率</th>
+                                        <th>失败次数/总次数</th>
+                                        <th>触发时间</th>
+                                        <th>API地址</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="alert in alertRecords" :key="alert.id">
+                                        <td>{{ alert.taskName }}</td>
+                                        <td>{{ alert.alertMessage }}</td>
+                                        <td>{{ alert.failureRate }}%</td>
+                                        <td>{{ alert.failureCount }}/{{ alert.totalCount }}</td>
+                                        <td>{{ formatDateTime(alert.alertTime) }}</td>
+                                        <td>{{ alert.apiUrl }}</td>
+                                    </tr>
+                                    <tr v-if="alertRecords.length === 0">
+                                        <td colspan="6" class="text-center text-muted">暂无警报记录</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -659,7 +715,10 @@
                     timeRange: {
                         startTime: '',
                         endTime: ''
-                    }
+                    },
+                    // 警报记录相关
+                    alertRecords: [],
+                    alertFilterTaskName: ''
                 };
             },
             mounted() {
@@ -682,6 +741,10 @@
                     this.currentPage = 1;
                     this.selectedTaskId = '';
                     this.loadLogs();
+                },
+                showAlerts() {
+                    this.currentView = 'alerts';
+                    this.loadAlertRecords();
                 },
                 async loadTasks() {
                     try {
@@ -1036,6 +1099,25 @@
                         console.error('Failed to save alert config:', error);
                         alert('保存警报配置失败: ' + (error.response?.data?.message || error.message));
                     }
+                },
+                // 警报记录相关方法
+                async loadAlertRecords() {
+                    try {
+                        const params = {};
+                        if (this.alertFilterTaskName) {
+                            params.taskName = this.alertFilterTaskName;
+                        }
+                        
+                        const response = await axios.get('/api/alert/records', { params });
+                        this.alertRecords = (response.data && response.data.data) ? response.data.data : [];
+                    } catch (error) {
+                        console.error('Failed to load alert records:', error);
+                        this.alertRecords = [];
+                    }
+                },
+                clearAlertFilter() {
+                    this.alertFilterTaskName = '';
+                    this.loadAlertRecords();
                 },
                 // 批量操作相关方法
                 toggleSelectAll() {

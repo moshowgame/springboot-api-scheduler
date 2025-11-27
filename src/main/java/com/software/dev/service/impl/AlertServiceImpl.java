@@ -282,4 +282,9 @@ public class AlertServiceImpl implements AlertService {
     public List<AlertRecord> getAlertRecordsByTaskId(String taskId) {
         return alertRecordMapper.selectByTaskId(taskId);
     }
+    
+    @Override
+    public List<AlertRecord> getAllAlertRecords(String taskName) {
+        return alertRecordMapper.selectAllWithFilters(taskName);
+    }
 }
