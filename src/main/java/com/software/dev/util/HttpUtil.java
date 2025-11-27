@@ -2,11 +2,14 @@ package com.software.dev.util;
 
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import com.alibaba.fastjson2.JSON;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -59,14 +62,47 @@ public class HttpUtil {
     }
 
     /**
+     * 构建带参数的URL
+     * @param baseUrl 基础URL
+     * @param params 参数Map
+     * @return 带参数的完整URL
+     */
+    private static String buildUrlWithParams(String baseUrl, Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            return baseUrl;
+        }
+
+        StringBuilder urlBuilder = new StringBuilder(baseUrl);
+        boolean hasQuery = baseUrl.contains("?");
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            try {
+                String key = URLEncoder.encode(entry.getKey(), StandardCharsets.UTF_8.name());
+                String value = URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name());
+                if (!hasQuery) {
+                    urlBuilder.append("?");
+                    hasQuery = true;
+                } else {
+                    urlBuilder.append("&");
+                }
+                urlBuilder.append(key).append("=").append(value);
+            } catch (Exception e) {
+                log.warn("Failed to encode URL parameter: {}={}", entry.getKey(), entry.getValue(), e);
+            }
+        }
+        return urlBuilder.toString();
+    }
+
+    /**
      * 发送GET请求
      * @param url 请求URL
      * @param headers 请求头
+     * @param params URL参数
      * @return 响应结果
      */
-    public static String get(String url, Map<String, String> headers) {
+    public static String get(String url, Map<String, String> headers, Map<String, String> params) {
         try {
-            Request.Builder requestBuilder = new Request.Builder().url(url);
+            String fullUrl = buildUrlWithParams(url, params);
+            Request.Builder requestBuilder = new Request.Builder().url(fullUrl);
 
             // 添加请求头
             if (headers != null && !headers.isEmpty()) {
@@ -119,13 +155,15 @@ public class HttpUtil {
      * @param url 请求URL
      * @param method 请求方法
      * @param headers 请求头
+     * @param params URL参数
      * @param body 请求体
      * @param contentType 内容类型
      * @return 响应结果
      */
-    public static String request(String url, String method, Map<String, String> headers, String body, String contentType) {
+    public static String request(String url, String method, Map<String, String> headers, 
+                                 Map<String, String> params, String body, String contentType) {
         if ("GET".equalsIgnoreCase(method)) {
-            return get(url, headers);
+            return get(url, headers, params);
         } else if ("POST".equalsIgnoreCase(method)) {
             return post(url, headers, body, contentType);
         } else {

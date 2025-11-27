@@ -1191,6 +1191,7 @@
                 async goToAlertPage(page) {
                     if (page < 1 || page > this.alertTotalPages) return;
                     this.alertCurrentPage = page;
+                    this.alertJumpToPage = page;
                     await this.loadAlertRecords();
                 },
                 // 批量操作相关方法

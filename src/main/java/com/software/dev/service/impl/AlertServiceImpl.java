@@ -1,5 +1,6 @@
 package com.software.dev.service.impl;
 
+import com.alibaba.fastjson2.JSON;
 import com.software.dev.entity.AlertConfig;
 import com.software.dev.entity.AlertRecord;
 import com.software.dev.entity.ApiResponse;
@@ -101,7 +102,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    @Scheduled(fixedRate = 600000) // 每10分钟执行一次
+    @Scheduled(cron = "0 0/1 * * * *")
     public void checkAndTriggerAlerts() {
         try {
             // 获取启用警报的任务列表
@@ -203,11 +204,15 @@ public class AlertServiceImpl implements AlertService {
                 // 简单解析JSON格式的headers
                 headers = parseJsonToMap(configHeaders);
             }
+            
+            // 解析参数
+            Map<String, String> params = new HashMap<>();
+            // 这里暂时没有参数需要解析，如果需要可以从config中添加参数配置
 
             // 发送HTTP请求
             String responseStr;
             try {
-                responseStr = HttpUtil.request(apiUrl, config.getHttpMethod(), headers, requestBody, "application/json");
+                responseStr = HttpUtil.request(apiUrl, config.getHttpMethod(), headers, params, requestBody, "application/json");
             } catch (Exception e) {
                 log.error("发送警报请求失败", e);
                 responseStr = "请求失败: " + e.getMessage();
