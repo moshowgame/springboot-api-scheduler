@@ -9,16 +9,12 @@ import com.software.dev.mapper.AlertRecordMapper;
 import com.software.dev.mapper.ApiResponseMapper;
 import com.software.dev.mapper.ApiTaskMapper;
 import com.software.dev.service.AlertService;
+import com.software.dev.util.HttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -41,9 +37,6 @@ public class AlertServiceImpl implements AlertService {
 
     @Autowired
     private ApiResponseMapper apiResponseMapper;
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Override
     @Transactional
@@ -108,7 +101,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    @Scheduled(fixedRate = 600000) // 每小时执行一次
+    @Scheduled(fixedRate = 600000) // 每10分钟执行一次
     public void checkAndTriggerAlerts() {
         try {
             // 获取启用警报的任务列表
@@ -191,29 +184,34 @@ public class AlertServiceImpl implements AlertService {
                         .replace("${failureCount}", String.valueOf(failureCount))
                         .replace("${totalCount}", String.valueOf(totalCount));
             }
+            
+            // 准备API URL，支持变量替换
+            String apiUrl = config.getApiUrl();
+            if (apiUrl != null && !apiUrl.isEmpty()) {
+                apiUrl = apiUrl
+                        .replace("${taskId}", task.getId())
+                        .replace("${taskName}", task.getTaskName())
+                        .replace("${failureRate}", failureRate + "%")
+                        .replace("${failureCount}", String.valueOf(failureCount))
+                        .replace("${totalCount}", String.valueOf(totalCount));
+            }
 
-            // 发送HTTP请求
-            HttpHeaders headers = new HttpHeaders();
+            // 解析请求头
+            Map<String, String> headers = new HashMap<>();
             String configHeaders = config.getHeaders();
             if (configHeaders != null && !configHeaders.isEmpty()) {
                 // 简单解析JSON格式的headers
-                Map<String, String> headerMap = parseJsonToMap(configHeaders);
-                headerMap.forEach(headers::add);
+                headers = parseJsonToMap(configHeaders);
             }
 
-            HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
-
-            HttpMethod method = HttpMethod.POST;
-            if ("GET".equalsIgnoreCase(config.getHttpMethod())) {
-                method = HttpMethod.GET;
+            // 发送HTTP请求
+            String responseStr;
+            try {
+                responseStr = HttpUtil.request(apiUrl, config.getHttpMethod(), headers, requestBody, "application/json");
+            } catch (Exception e) {
+                log.error("发送警报请求失败", e);
+                responseStr = "请求失败: " + e.getMessage();
             }
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    config.getApiUrl(),
-                    method,
-                    entity,
-                    String.class
-            );
 
             // 记录警报
             AlertRecord alertRecord = new AlertRecord();
@@ -224,8 +222,8 @@ public class AlertServiceImpl implements AlertService {
             alertRecord.setFailureCount(failureCount);
             alertRecord.setTotalCount(totalCount);
             alertRecord.setAlertMessage(alertMessage);
-            alertRecord.setApiUrl(config.getApiUrl());
-            alertRecord.setResponse(response.getBody());
+            alertRecord.setApiUrl(apiUrl);
+            alertRecord.setResponse(responseStr);
             alertRecord.setAlertTime(LocalDateTime.now());
             alertRecord.setCreateTime(LocalDateTime.now());
 
@@ -286,5 +284,16 @@ public class AlertServiceImpl implements AlertService {
     @Override
     public List<AlertRecord> getAllAlertRecords(String taskName) {
         return alertRecordMapper.selectAllWithFilters(taskName);
+    }
+    
+    @Override
+    public List<AlertRecord> getAlertRecordsByPage(int page, int size, String taskName) {
+        int offset = (page - 1) * size;
+        return alertRecordMapper.selectByPageWithConditions(offset, size, taskName);
+    }
+    
+    @Override
+    public int countAlertRecords(String taskName) {
+        return alertRecordMapper.countWithConditions(taskName);
     }
 }

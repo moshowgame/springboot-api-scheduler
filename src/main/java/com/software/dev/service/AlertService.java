@@ -27,6 +27,12 @@ public interface AlertService {
     // 获取所有警报记录，支持筛选
     List<AlertRecord> getAllAlertRecords(String taskName);
     
+    // 分页获取警报记录，支持筛选
+    List<AlertRecord> getAlertRecordsByPage(int page, int size, String taskName);
+    
+    // 获取符合条件的警报记录总数
+    int countAlertRecords(String taskName);
+    
     // 清理旧的警报记录
     void cleanOldAlertRecords();
 }

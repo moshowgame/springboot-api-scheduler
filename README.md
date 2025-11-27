@@ -24,11 +24,21 @@
 - **✅ 断言验证**: 支持对API响应结果进行断言验证
 - **🔔 警报通知**: 支持基于断言失败率的警报通知机制
 
+### 📷 系统截图
+登录<br>
 <img src="{DB200B31-9734-4C8D-B94B-F319AC77D6C1}.png" alt="登录" width="600"/><br>
+任务列表<br>
 <img src="{0CBBE51F-9282-42B8-8A02-2A33E3DB87DD}.png" alt="任务列表" width="600"/><br>
+日志<br>
 <img src="{68776847-753E-412B-B899-1DC7622D354E}.png" alt="日志" width="600"/><br>
+任务详情<br>
 <img src="{54583E38-DE3C-452A-BC5B-DEBDB2915411}.png" alt="任务详情" width="200"/><br>
+断言<br>
 <img src="{a7bb4bf8-99e7-4003-80ba-2a53194bcec0}.png" alt="断言" width="200"/><br>
+警报设置<br>
+<img src="{8a06159e-e0e6-4a5c-8011-82ee24f998ce}.png" alt="警报设置" width="200"/><br>
+警报记录<br>
+<img src="{c444212c-56ed-4328-b537-17e642aa7c96}.png" alt="警报记录" width="200"/><br>
 
 ## 🏆Author作者
 Powered by Moshow郑锴 , Show more on CSDN https://zhengkai.blog.csdn.net/ | 公众号【软件开发大百科】

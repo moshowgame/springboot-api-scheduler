@@ -2,13 +2,14 @@ package com.software.dev.controller;
 
 import com.alibaba.fastjson2.JSON;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-
+@Slf4j
 @RestController
 @RequestMapping("/demo")
 public class DemoController {
@@ -41,7 +42,7 @@ public class DemoController {
         
         // Timestamp
         response.put("timestamp", System.currentTimeMillis());
-        
+        log.info("response: {}", JSON.toJSONString(response));
         return ResponseEntity.ok(response);
     }
 
@@ -83,7 +84,7 @@ public class DemoController {
         
         // Timestamp
         response.put("timestamp", System.currentTimeMillis());
-        
+        log.info("response: {}", JSON.toJSONString(response));
         return ResponseEntity.ok(response);
     }
 

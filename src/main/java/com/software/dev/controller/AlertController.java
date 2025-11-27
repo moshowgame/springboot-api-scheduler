@@ -141,15 +141,23 @@ public class AlertController {
     }
     
     /**
-     * 获取所有警报记录，支持按任务名称筛选
+     * 获取所有警报记录，支持按任务名称筛选和分页
      */
     @GetMapping("/records")
-    public ResponseEntity<Map<String, Object>> getAllAlertRecords(@RequestParam(required = false) String taskName) {
+    public ResponseEntity<Map<String, Object>> getAllAlertRecords(
+            @RequestParam(required = false) String taskName,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "50") int size) {
         try {
-            List<AlertRecord> records = alertService.getAllAlertRecords(taskName);
+            List<AlertRecord> records = alertService.getAlertRecordsByPage(page, size, taskName);
+            int total = alertService.countAlertRecords(taskName);
+            
             Map<String, Object> response = new HashMap<>();
             response.put("code", 200);
             response.put("data", records);
+            response.put("total", total);
+            response.put("page", page);
+            response.put("size", size);
             response.put("message", "获取警报记录成功");
             return ResponseEntity.ok(response);
         } catch (Exception e) {

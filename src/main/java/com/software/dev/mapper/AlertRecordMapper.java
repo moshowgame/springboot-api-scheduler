@@ -27,4 +27,12 @@ public interface AlertRecordMapper {
     
     // 查询所有警报记录，支持按任务名称筛选和按时间倒序排列
     List<AlertRecord> selectAllWithFilters(@Param("taskName") String taskName);
+    
+    // 分页查询警报记录，支持筛选和排序
+    List<AlertRecord> selectByPageWithConditions(@Param("offset") int offset, 
+                                                 @Param("limit") int limit, 
+                                                 @Param("taskName") String taskName);
+    
+    // 获取符合条件的警报记录总数
+    int countWithConditions(@Param("taskName") String taskName);
 }

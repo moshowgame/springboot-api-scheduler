@@ -163,7 +163,28 @@ update
     public.sys_user for each row execute function update_updated_time_column();
 
 
-
+-- 导入用户
 INSERT INTO public.sys_user
 (id, username, "password", enabled, create_time, update_time)
 VALUES('admin-001', 'admin', '0192023a7bbd73250516f069df18b500', true, '2025-11-23 23:42:19.946', '2025-11-23 23:42:19.946');
+
+-- 导入警报
+INSERT INTO public.alert_config
+(id, task_id, failure_rate_threshold, check_interval, api_url, http_method, headers, body, enabled, create_time, update_time, last_check_time)
+VALUES('4bf6930f-b2b4-414f-afcb-d93fbadd0704', NULL, 50, 30, 'http://localhost:8080/demo/test?alert=1', 'GET', '{"Content-Type": "application/json"}', '{"message": "API任务断言失败率过高", "taskId": "${taskId}", "taskName": "${taskName}", "failureRate": "${failureRate}%"}', true, '2025-11-27 21:36:27.227', '2025-11-27 22:07:38.420', '2025-11-27 22:07:38.420');
+
+-- 导入断言
+INSERT INTO public.api_assertion
+(id, task_id, response_id, assertion_type, expected_value, actual_value, passed, error_message, sort_order, create_time)
+VALUES('a53602e7-e910-4e34-9d77-ea457231cb6b', '45abb91a-3499-4ae6-9cf8-2bc7a62f7e62', NULL, 'HTTP_CODE', '200', NULL, NULL, NULL, NULL, '2025-11-27 21:30:48.040');
+INSERT INTO public.api_assertion
+(id, task_id, response_id, assertion_type, expected_value, actual_value, passed, error_message, sort_order, create_time)
+VALUES('b2bed570-e97d-4d98-842a-c9174137e142', 'd9bce151-2bf9-4658-9f36-c167bfa90735', NULL, 'JSON_CONTAINS', '200', NULL, NULL, NULL, NULL, '2025-11-27 21:30:53.950');
+
+-- 导入任务
+INSERT INTO public.api_task
+(id, task_name, url, "method", timeout, headers, parameters, cron_expression, status, description, create_time, update_time, last_execute_time, assertions, alert_enabled)
+VALUES('45abb91a-3499-4ae6-9cf8-2bc7a62f7e62', 'TEST GET (ERROR)', 'http://localhost:8080/demo2/test222?my=1', 'GET', 30000, '{"myheader":"123456"}', '{"myvalue":"123456"}', '0 */1 * * * ?', 'RUNNING', '测试ERROR场景', '2025-11-27 21:28:29.418', '2025-11-27 21:36:33.894', NULL, NULL, true);
+INSERT INTO public.api_task
+(id, task_name, url, "method", timeout, headers, parameters, cron_expression, status, description, create_time, update_time, last_execute_time, assertions, alert_enabled)
+VALUES('d9bce151-2bf9-4658-9f36-c167bfa90735', 'TEST GET', 'http://localhost:8080/demo/test?my=1', 'GET', 30000, '{"myheader":"123456"}', '{"myvalue":"123456"}', '0 */1 * * * ?', 'RUNNING', '', '2025-11-27 21:28:13.215', '2025-11-27 21:36:33.905', NULL, NULL, true);
