@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-scheduler
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/api_scheduler
+    username: postgres
+    password: ENC(H82A2O7cqZy1tJRsK73AYw==)
+#   origin password: root123
+    driver-class-name: org.postgresql.Driver
+  
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+    servlet:
+      content-type: text/html
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.software.dev.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+logging:
+  level:
+    com.software.dev: DEBUG
+    org.springframework.scheduling: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/api-scheduler.log
+
+jasypt:
+  encryptor:
+    # 加密解密请用工具类EncryptPassword.java
+    # 加密密钥（生产禁止明文写！）
+    password: world-of-moshow
+    # 加密算法（默认，可自定义）
+    algorithm: PBEWithMD5AndDES
+    iv-generator-classname: org.jasypt.iv.NoIvGenerator
