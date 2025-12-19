@@ -313,6 +313,7 @@ mybatis:
 
 | 日期         | 更新内容                                                                                                            |
 |------------|-----------------------------------------------------------------------------------------------------------------|
+| 2025-12-19 | ✅ 前端优化为Vue3+View UI PLUS[FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) |
 | 2025-12-08 | ✅ 引用jasypt对数据库密码进行加密，🉑用EncryptPassword进行加密解密操作。✅ 解耦配置文件,通过java -jar springboot-api-scheduler-1.0-SNAPSHOT.jar --spring.profiles.active=dev启用 |
 | 2025-11-27 | ✅ Alert警报功能上线 [ALERT_GUIDELINE.md](ALERT_GUIDELINE.md)  🔧 GET请求当请求方法为GET且存在参数配置时，将自动将parameters中的键值对转换为URL查询参数 |
 | 2025-11-26 | 🔧 修复日志界面筛选和分页功能                                                                                                |
