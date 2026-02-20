@@ -1,0 +1,32 @@
+{
+  "name": "api-scheduler-admin",
+  "version": "1.0.0",
+  "description": "API Scheduler Admin Panel - Enterprise Management System",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.5",
+    "pinia": "^2.1.7",
+    "view-ui-plus": "^1.3.16",
+    "axios": "^1.6.0",
+    "dayjs": "^1.11.10",
+    "lodash-es": "^4.17.21",
+    "@vueuse/core": "^10.5.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.5.0",
+    "vite": "^5.0.0",
+    "eslint": "^8.54.0",
+    "eslint-plugin-vue": "^9.18.1",
+    "unplugin-auto-import": "^0.17.0",
+    "unplugin-vue-components": "^0.25.2",
+    "vite-plugin-compression": "^0.5.1",
+    "sass": "^1.69.5"
+  },
+  "type": "module"
+}

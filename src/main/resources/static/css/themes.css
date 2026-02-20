@@ -1,0 +1,491 @@
+/* 主题切换按钮样式 */
+.theme-switcher {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.theme-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.theme-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.theme-btn.active {
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+}
+
+/* 现代化主题 (默认) */
+:root[data-theme="modern"] {
+    --primary-color: #6366f1;
+    --primary-hover: #4f46e5;
+    --secondary-color: #8b5cf6;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --info-color: #0ea5e9;
+    
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-navbar: #1e293b;
+    
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    
+    --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    --gradient-success: linear-gradient(135deg, var(--success-color) 0%, #34d399 100%);
+}
+
+/* 马里奥像素风主题 */
+:root[data-theme="mario"] {
+    --primary-color: #e52521;
+    --primary-hover: #c71f1c;
+    --secondary-color: #fbd000;
+    --success-color: #43b244;
+    --warning-color: #ff7f27;
+    --danger-color: #e52521;
+    --info-color: #00a2e8;
+    
+    --bg-primary: #f5f5dc;
+    --bg-secondary: #ffffcc;
+    --bg-card: #fff8dc;
+    --bg-navbar: #8b0000;
+    
+    --text-primary: #8b0000;
+    --text-secondary: #654321;
+    --text-muted: #a0522d;
+    
+    --border-color: #deb887;
+    --shadow-sm: 0 2px 0 0 rgba(139, 0, 0, 0.3);
+    --shadow: 0 4px 0 0 rgba(139, 0, 0, 0.3);
+    --shadow-lg: 0 8px 0 0 rgba(139, 0, 0, 0.3);
+    
+    --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, #ff6b6b 100%);
+    --gradient-success: linear-gradient(135deg, var(--success-color) 0%, #66ff66 100%);
+}
+
+/* 通用样式重写 */
+[data-theme="modern"] body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+[data-theme="mario"] body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Press Start 2P', 'Courier New', monospace;
+    background-image: 
+        radial-gradient(circle at 20% 30%, rgba(255, 215, 0, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 80% 70%, rgba(229, 37, 33, 0.1) 0%, transparent 20%);
+}
+
+/* 导航栏样式 */
+[data-theme="modern"] .navbar {
+    background: var(--gradient-primary) !important;
+    box-shadow: var(--shadow-lg);
+    border: none;
+}
+
+[data-theme="mario"] .navbar {
+    background: var(--bg-navbar) !important;
+    border-bottom: 4px solid var(--primary-color);
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+[data-theme="mario"] .navbar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--secondary-color) 0px,
+        var(--secondary-color) 20px,
+        var(--primary-color) 20px,
+        var(--primary-color) 40px
+    );
+}
+
+/* 卡片样式 */
+[data-theme="modern"] .card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    background: var(--bg-card);
+}
+
+[data-theme="modern"] .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme="mario"] .card {
+    border: 3px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: var(--shadow);
+    background: var(--bg-card);
+    position: relative;
+}
+
+[data-theme="mario"] .card::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 2px solid var(--primary-color);
+    border-radius: 0;
+    pointer-events: none;
+}
+
+/* 按钮样式 */
+[data-theme="modern"] .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+[data-theme="modern"] .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+[data-theme="modern"] .btn-primary {
+    background: var(--gradient-primary);
+    border: none;
+}
+
+[data-theme="mario"] .btn {
+    border: 3px solid var(--border-color);
+    border-radius: 0;
+    font-weight: bold;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    font-family: inherit;
+}
+
+[data-theme="mario"] .btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+[data-theme="mario"] .btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+
+[data-theme="mario"] .btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* 表格样式 */
+[data-theme="modern"] .table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+[data-theme="modern"] .table th {
+    background: var(--bg-secondary);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+[data-theme="mario"] .table {
+    border: 2px solid var(--border-color);
+}
+
+[data-theme="mario"] .table th {
+    background: var(--secondary-color);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    text-align: center;
+}
+
+/* 徽章样式 */
+[data-theme="modern"] .badge {
+    border-radius: 20px;
+    font-weight: 500;
+    padding: 6px 12px;
+}
+
+[data-theme="mario"] .badge {
+    border: 2px solid var(--border-color);
+    border-radius: 0;
+    font-weight: bold;
+    padding: 4px 8px;
+    font-family: inherit;
+}
+
+/* 输入框样式 */
+[data-theme="modern"] .form-control,
+[data-theme="modern"] .form-select {
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+[data-theme="modern"] .form-control:focus,
+[data-theme="modern"] .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+[data-theme="mario"] .form-control,
+[data-theme="mario"] .form-select {
+    border: 3px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="mario"] .form-control:focus,
+[data-theme="mario"] .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(229, 37, 33, 0.2);
+}
+
+/* 分页样式 */
+[data-theme="modern"] .pagination .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+[data-theme="modern"] .pagination .page-link:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+[data-theme="mario"] .pagination .page-link {
+    border: 2px solid var(--border-color);
+    border-radius: 0;
+    margin: 0 1px;
+    background: var(--bg-card);
+    font-weight: bold;
+}
+
+/* 模态框样式 */
+[data-theme="modern"] .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: var(--shadow-lg);
+}
+
+[data-theme="mario"] .modal-content {
+    border: 4px solid var(--border-color);
+    border-radius: 0;
+    box-shadow: var(--shadow-lg);
+}
+
+/* 警告框样式 */
+[data-theme="modern"] .alert {
+    border-radius: 8px;
+    border: none;
+}
+
+[data-theme="mario"] .alert {
+    border: 3px solid var(--border-color);
+    border-radius: 0;
+}
+
+/* 加载动画 */
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 马里奥特色元素 */
+.mario-coin {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle at 30% 30%, #ffff00, #ffcc00);
+    border: 2px solid #ff9900;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: inset -2px -2px 4px rgba(0,0,0,0.2);
+}
+
+.mario-coin::before {
+    content: "?";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+    color: #ff9900;
+}
+
+.mario-brick {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: repeating-linear-gradient(
+        45deg,
+        #8b4513 0px,
+        #8b4513 10px,
+        #a0522d 10px,
+        #a0522d 20px
+    );
+    border: 2px solid #654321;
+}
+
+/* 响应式调整 */
+/* 任务卡片样式 */
+.task-card {
+    padding: 15px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+}
+
+[data-theme="modern"] .task-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+
+[data-theme="mario"] .task-card {
+    border: 2px solid var(--border-color);
+    border-radius: 0;
+    position: relative;
+}
+
+[data-theme="mario"] .task-card::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 1px solid var(--primary-color);
+    pointer-events: none;
+}
+
+.task-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.task-id {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+
+.task-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.task-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.detail-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    min-width: 60px;
+    font-size: 0.875rem;
+}
+
+.detail-value {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.method-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.method-get {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.method-post {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+[data-theme="mario"] .method-badge {
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    font-weight: bold;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .theme-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .task-card {
+        padding: 12px;
+    }
+    
+    .task-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .detail-label {
+        min-width: auto;
+    }
+}
