@@ -19,6 +19,7 @@
                     <a class="nav-link" href="#" @click="showTasks">📋 任务管理</a>
                     <a class="nav-link" href="#" @click="showLogs">📊 执行日志</a>
                     <a class="nav-link" href="#" @click="showAlerts">🔔 警报记录</a>
+                    <a class="nav-link" href="#" @click="showStatistics">📈 数据统计</a>
                 </div>
                 <div class="navbar-nav align-items-center">
                     <!-- 主题切换器 -->
@@ -453,6 +454,280 @@
             </div>
         </div>
 
+        <!-- 数据统计页面 -->
+        <div v-if="currentView === 'statistics'" class="mt-4">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>📈 数据统计与分析</h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- 筛选控制区 -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="card border-primary">
+                                        <div class="card-header bg-primary text-white py-2">
+                                            <i class="fas fa-filter me-2"></i>数据筛选
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">时间范围：</label>
+                                                    <div class="btn-group" role="group">
+                                                        <button type="button" class="btn btn-sm" 
+                                                                :class="selectedDays === 1 ? 'btn-primary' : 'btn-outline-primary'"
+                                                                @click="changeDays(1)">1天</button>
+                                                        <button type="button" class="btn btn-sm" 
+                                                                :class="selectedDays === 3 ? 'btn-primary' : 'btn-outline-primary'"
+                                                                @click="changeDays(3)">3天</button>
+                                                        <button type="button" class="btn btn-sm" 
+                                                                :class="selectedDays === 7 ? 'btn-primary' : 'btn-outline-primary'"
+                                                                @click="changeDays(7)">7天</button>
+                                                        <button type="button" class="btn btn-sm" 
+                                                                :class="selectedDays === 15 ? 'btn-primary' : 'btn-outline-primary'"
+                                                                @click="changeDays(15)">15天</button>
+                                                        <button type="button" class="btn btn-sm" 
+                                                                :class="selectedDays === 30 ? 'btn-primary' : 'btn-outline-primary'"
+                                                                @click="changeDays(30)">30天</button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">任务筛选：</label>
+                                                    <select class="form-select" v-model="selectedTaskId" @change="loadStatistics">
+                                                        <option value="">所有任务</option>
+                                                        <option v-for="task in allTasks" :key="task.id" :value="task.id">
+                                                            {{ task.taskName }}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">&nbsp;</label>
+                                                    <button class="btn btn-primary d-block w-100" @click="refreshAllData" :disabled="loading.statistics">
+                                                        <i class="fas fa-sync-alt me-1"></i>刷新数据
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 统计卡片 -->
+                            <div class="row mb-4">
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">总任务数</h6>
+                                                    <h2 class="mb-0">{{ statistics.totalTasks || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-tasks fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">运行中</h6>
+                                                    <h2 class="mb-0">{{ statistics.runningTasks || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-play-circle fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">总执行次数</h6>
+                                                    <h2 class="mb-0">{{ statistics.totalExecutions || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-chart-line fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-warning text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">警报总数</h6>
+                                                    <h2 class="mb-0">{{ statistics.totalAlerts || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-bell fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">成功次数</h6>
+                                                    <h2 class="mb-0">{{ statistics.successCount || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-check-circle fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-danger text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">失败次数</h6>
+                                                    <h2 class="mb-0">{{ statistics.failureCount || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-times-circle fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">成功率</h6>
+                                                    <h2 class="mb-0">{{ statistics.successRate || 0 }}%</h2>
+                                                </div>
+                                                <i class="fas fa-percentage fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">平均响应(ms)</h6>
+                                                    <h2 class="mb-0">{{ statistics.avgResponseTime || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-clock fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 图表区域 -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">📊 每日趋势分析</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="dailyTrendChart" height="100"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">🥧 任务状态分布</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="statusChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">📊 HTTP响应码分布</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="responseCodeChart" height="200"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">⚠️ 错误触发趋势</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <canvas id="errorTrendChart" height="100"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 最近执行记录 -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h6 class="mb-0">📝 最近执行记录</h6>
+                                            <button class="btn btn-sm btn-outline-primary" @click="loadRecentExecutions">
+                                                <i class="fas fa-sync-alt"></i> 刷新
+                                            </button>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-striped table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>任务名称</th>
+                                                        <th>URL</th>
+                                                        <th>状态码</th>
+                                                        <th>执行状态</th>
+                                                        <th>响应时间</th>
+                                                        <th>执行时间</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr v-for="log in recentExecutions" :key="log.id">
+                                                        <td>{{ log.taskName }}</td>
+                                                        <td>{{ log.url }}</td>
+                                                        <td>
+                                                            <span class="badge" :class="getStatusCodeClass(log.statusCode)">
+                                                                {{ log.statusCode }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge" :class="log.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'">
+                                                                {{ log.status === 'SUCCESS' ? '成功' : '失败' }}
+                                                            </span>
+                                                        </td>
+                                                        <td>{{ log.responseTime }}ms</td>
+                                                        <td>{{ formatDateTime(log.executeTime) }}</td>
+                                                    </tr>
+                                                    <tr v-if="recentExecutions.length === 0">
+                                                        <td colspan="6" class="text-center text-muted">暂无执行记录</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 添加/编辑任务模态框 -->
         <div class="modal fade" id="taskModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -804,7 +1079,28 @@
                     alertPageSize: 50,
                     alertTotalRecords: 0,
                     alertTotalPages: 0,
-                    alertJumpToPage: 1
+                    alertJumpToPage: 1,
+                    // 数据统计相关
+                    selectedDays: 7,
+                    selectedTaskId: '',
+                    statistics: {
+                        totalTasks: 0,
+                        runningTasks: 0,
+                        pausedTasks: 0,
+                        totalExecutions: 0,
+                        successCount: 0,
+                        failureCount: 0,
+                        successRate: 0,
+                        avgResponseTime: 0,
+                        minResponseTime: 0,
+                        maxResponseTime: 0,
+                        totalAlerts: 0
+                    },
+                    recentExecutions: [],
+                    loading: {
+                        statistics: false
+                    },
+                    charts: {}
                 };
             },
             mounted() {
@@ -881,6 +1177,10 @@
                     this.currentView = 'alerts';
                     this.alertCurrentPage = 1;
                     this.loadAlertRecords();
+                },
+                showStatistics() {
+                    this.currentView = 'statistics';
+                    this.loadStatistics();
                 },
                 async loadTasks() {
                     try {
@@ -1408,6 +1708,349 @@
                     // 格式化本地时间显示
                     const date = new Date(dateTimeLocal);
                     return date.toLocaleString();
+                },
+                // 数据统计相关方法
+                async loadStatistics() {
+                    try {
+                        this.loading.statistics = true;
+                        const params = { days: this.selectedDays };
+                        if (this.selectedTaskId) {
+                            params.taskId = this.selectedTaskId;
+                        }
+                        
+                        const response = await axios.get('/api/statistics', { params });
+                        const data = response.data?.data || {};
+                        
+                        this.statistics = {
+                            totalTasks: data.totalTasks || 0,
+                            runningTasks: data.runningTasks || 0,
+                            pausedTasks: data.pausedTasks || 0,
+                            totalExecutions: data.totalExecutions || 0,
+                            successCount: data.successCount || 0,
+                            failureCount: data.failureCount || 0,
+                            successRate: data.successRate || 0,
+                            avgResponseTime: data.avgResponseTime || 0,
+                            minResponseTime: data.minResponseTime || 0,
+                            maxResponseTime: data.maxResponseTime || 0,
+                            totalAlerts: data.totalAlerts || 0
+                        };
+                        
+                        // 绘制图表
+                        this.$nextTick(() => {
+                            this.drawDailyTrendChart(data.dailyTrends || []);
+                            this.drawStatusChart(data.statusDistribution || []);
+                            this.drawResponseCodeChart(data.responseCodeDistribution || {});
+                        });
+                        
+                        // 加载错误趋势和最近执行记录
+                        await this.loadErrorStatistics();
+                        await this.loadRecentExecutions();
+                    } catch (error) {
+                        console.error('Failed to load statistics:', error);
+                    } finally {
+                        this.loading.statistics = false;
+                    }
+                },
+                async loadErrorStatistics() {
+                    try {
+                        const params = { days: this.selectedDays };
+                        if (this.selectedTaskId) {
+                            params.taskId = this.selectedTaskId;
+                        }
+                        
+                        const response = await axios.get('/api/statistics/errors', { params });
+                        const data = response.data?.data || {};
+                        
+                        this.$nextTick(() => {
+                            this.drawErrorTrendChart(data.dailyErrors || []);
+                        });
+                    } catch (error) {
+                        console.error('Failed to load error statistics:', error);
+                    }
+                },
+                async loadRecentExecutions() {
+                    try {
+                        const params = { limit: 10, days: this.selectedDays };
+                        const response = await axios.get('/api/statistics/recent', { params });
+                        this.recentExecutions = response.data?.data || [];
+                    } catch (error) {
+                        console.error('Failed to load recent executions:', error);
+                        this.recentExecutions = [];
+                    }
+                },
+                changeDays(days) {
+                    this.selectedDays = days;
+                    this.loadStatistics();
+                },
+                async refreshAllData() {
+                    await this.loadStatistics();
+                },
+                drawDailyTrendChart(data) {
+                    const canvas = document.getElementById('dailyTrendChart');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    
+                    // 清空画布
+                    ctx.clearRect(0, 0, width, height);
+                    
+                    if (!data || data.length === 0) {
+                        ctx.fillStyle = '#999';
+                        ctx.font = '16px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('暂无数据', width / 2, height / 2);
+                        return;
+                    }
+                    
+                    // 简单的折线图绘制
+                    const padding = 50;
+                    const chartWidth = width - padding * 2;
+                    const chartHeight = height - padding * 2;
+                    
+                    const dates = data.map(item => item.date);
+                    const executionCounts = data.map(item => item.executionCount);
+                    const errorRates = data.map(item => 100 - (item.successRate || 0));
+                    
+                    const maxExecutions = Math.max(...executionCounts, 1);
+                    const maxErrorRate = Math.max(...errorRates, 1);
+                    
+                    // 绘制坐标轴
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(padding, padding);
+                    ctx.lineTo(padding, height - padding);
+                    ctx.lineTo(width - padding, height - padding);
+                    ctx.stroke();
+                    
+                    // 绘制请求次数折线
+                    ctx.strokeStyle = '#2563eb';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    executionCounts.forEach((count, index) => {
+                        const x = padding + (chartWidth / (dates.length - 1)) * index;
+                        const y = height - padding - (count / maxExecutions) * chartHeight;
+                        if (index === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+                    ctx.stroke();
+                    
+                    // 绘制错误率折线
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    errorRates.forEach((rate, index) => {
+                        const x = padding + (chartWidth / (dates.length - 1)) * index;
+                        const y = height - padding - (rate / maxErrorRate) * chartHeight;
+                        if (index === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+                    ctx.stroke();
+                    
+                    // 绘制图例
+                    ctx.fillStyle = '#2563eb';
+                    ctx.fillRect(padding, 10, 20, 10);
+                    ctx.fillStyle = '#333';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('请求次数', padding + 25, 19);
+                    
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillRect(padding + 100, 10, 20, 10);
+                    ctx.fillStyle = '#333';
+                    ctx.fillText('错误率', padding + 125, 19);
+                },
+                drawStatusChart(data) {
+                    const canvas = document.getElementById('statusChart');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    
+                    ctx.clearRect(0, 0, width, height);
+                    
+                    if (!data || data.length === 0) {
+                        ctx.fillStyle = '#999';
+                        ctx.font = '16px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('暂无数据', width / 2, height / 2);
+                        return;
+                    }
+                    
+                    const centerX = width / 2;
+                    const centerY = height / 2;
+                    const radius = Math.min(centerX, centerY) - 40;
+                    
+                    const total = data.reduce((sum, item) => sum + item.count, 0);
+                    let startAngle = -Math.PI / 2;
+                    
+                    const colors = {
+                        'RUNNING': '#16a34a',
+                        'PAUSED': '#6b7280',
+                        'ERROR': '#dc2626'
+                    };
+                    
+                    data.forEach((item, index) => {
+                        const sliceAngle = (item.count / total) * 2 * Math.PI;
+                        const endAngle = startAngle + sliceAngle;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, centerY);
+                        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                        ctx.closePath();
+                        ctx.fillStyle = colors[item.status] || '#2563eb';
+                        ctx.fill();
+                        
+                        // 绘制标签
+                        const labelAngle = startAngle + sliceAngle / 2;
+                        const labelX = centerX + (radius + 20) * Math.cos(labelAngle);
+                        const labelY = centerY + (radius + 20) * Math.sin(labelAngle);
+                        
+                        ctx.fillStyle = '#333';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        const statusName = item.status === 'RUNNING' ? '运行中' : 
+                                          item.status === 'PAUSED' ? '已暂停' : item.status;
+                        ctx.fillText(`${statusName}: ${item.count}`, labelX, labelY);
+                        
+                        startAngle = endAngle;
+                    });
+                },
+                drawResponseCodeChart(data) {
+                    const canvas = document.getElementById('responseCodeChart');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    
+                    ctx.clearRect(0, 0, width, height);
+                    
+                    if (!data || Object.keys(data).length === 0) {
+                        ctx.fillStyle = '#999';
+                        ctx.font = '16px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('暂无数据', width / 2, height / 2);
+                        return;
+                    }
+                    
+                    const codes = Object.keys(data);
+                    const counts = Object.values(data);
+                    const maxCount = Math.max(...counts, 1);
+                    
+                    const padding = 50;
+                    const chartWidth = width - padding * 2;
+                    const chartHeight = height - padding * 2;
+                    const barWidth = chartWidth / codes.length * 0.6;
+                    const barSpacing = chartWidth / codes.length;
+                    
+                    // 绘制坐标轴
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(padding, padding);
+                    ctx.lineTo(padding, height - padding);
+                    ctx.lineTo(width - padding, height - padding);
+                    ctx.stroke();
+                    
+                    // 绘制柱状图
+                    codes.forEach((code, index) => {
+                        const x = padding + barSpacing * index + (barSpacing - barWidth) / 2;
+                        const barHeight = (counts[index] / maxCount) * chartHeight;
+                        const y = height - padding - barHeight;
+                        
+                        // 根据状态码设置颜色
+                        if (code.startsWith('2')) {
+                            ctx.fillStyle = '#16a34a';
+                        } else if (code.startsWith('4')) {
+                            ctx.fillStyle = '#d97706';
+                        } else if (code.startsWith('5')) {
+                            ctx.fillStyle = '#dc2626';
+                        } else {
+                            ctx.fillStyle = '#2563eb';
+                        }
+                        
+                        ctx.fillRect(x, y, barWidth, barHeight);
+                        
+                        // 绘制标签
+                        ctx.fillStyle = '#333';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(code, x + barWidth / 2, height - padding + 20);
+                        ctx.fillText(counts[index], x + barWidth / 2, y - 5);
+                    });
+                },
+                drawErrorTrendChart(data) {
+                    const canvas = document.getElementById('errorTrendChart');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const width = canvas.width;
+                    const height = canvas.height;
+                    
+                    ctx.clearRect(0, 0, width, height);
+                    
+                    if (!data || data.length === 0) {
+                        ctx.fillStyle = '#999';
+                        ctx.font = '16px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText('暂无数据', width / 2, height / 2);
+                        return;
+                    }
+                    
+                    const padding = 50;
+                    const chartWidth = width - padding * 2;
+                    const chartHeight = height - padding * 2;
+                    
+                    const dates = data.map(item => item.date);
+                    const errorCounts = data.map(item => item.errorCount);
+                    const maxErrors = Math.max(...errorCounts, 1);
+                    
+                    // 绘制坐标轴
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(padding, padding);
+                    ctx.lineTo(padding, height - padding);
+                    ctx.lineTo(width - padding, height - padding);
+                    ctx.stroke();
+                    
+                    // 绘制面积图
+                    ctx.fillStyle = 'rgba(220, 38, 38, 0.2)';
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.lineWidth = 2;
+                    
+                    ctx.beginPath();
+                    errorCounts.forEach((count, index) => {
+                        const x = padding + (chartWidth / (dates.length - 1)) * index;
+                        const y = height - padding - (count / maxErrors) * chartHeight;
+                        if (index === 0) {
+                            ctx.moveTo(x, height - padding);
+                            ctx.lineTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    });
+                    ctx.lineTo(padding + chartWidth, height - padding);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                },
+                getStatusCodeClass(code) {
+                    if (!code) return 'bg-secondary';
+                    if (code >= 200 && code < 300) return 'bg-success';
+                    if (code >= 400 && code < 500) return 'bg-warning';
+                    if (code >= 500) return 'bg-danger';
+                    return 'bg-secondary';
                 }
             },
             computed: {

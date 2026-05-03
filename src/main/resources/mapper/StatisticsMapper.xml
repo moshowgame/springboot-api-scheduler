@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.software.dev.mapper.StatisticsMapper">
+    
+    <!-- 任务统计概览 -->
+    <select id="getTaskOverview" resultType="com.software.dev.entity.Statistics">
+        SELECT 
+            COUNT(*) as totalTasks,
+            SUM(CASE WHEN status = 'RUNNING' THEN 1 ELSE 0 END) as runningTasks,
+            SUM(CASE WHEN status = 'PAUSED' THEN 1 ELSE 0 END) as pausedTasks
+        FROM api_task
+    </select>
+    
+    <!-- 执行统计概览 -->
+    <select id="getExecutionOverview" resultType="com.software.dev.entity.Statistics">
+        SELECT 
+            COUNT(*) as totalExecutions,
+            SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount,
+            SUM(CASE WHEN status = 'ERROR' THEN 1 ELSE 0 END) as failureCount,
+            AVG(response_time) as avgResponseTime,
+            MIN(response_time) as minResponseTime,
+            MAX(response_time) as maxResponseTime
+        FROM api_response
+        WHERE execute_time >= NOW() - INTERVAL '${days} days'
+    </select>
+    
+    <!-- 警报统计 -->
+    <select id="getAlertOverview" resultType="com.software.dev.entity.Statistics">
+        SELECT 
+            COUNT(*) as totalAlerts
+        FROM alert_record
+    </select>
+    
+    <!-- 任务状态分布 -->
+    <select id="getStatusDistribution" resultType="com.software.dev.entity.Statistics$StatusCount">
+        SELECT 
+            status as status,
+            COUNT(*) as count
+        FROM api_task
+        GROUP BY status
+    </select>
+    
+    <!-- 每日趋势数据 -->
+    <select id="getDailyTrends" resultType="com.software.dev.entity.Statistics$DailyTrend">
+        SELECT 
+            TO_CHAR(execute_time, 'YYYY-MM-DD') as date,
+            COUNT(*) as executionCount,
+            SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount,
+            SUM(CASE WHEN status = 'ERROR' THEN 1 ELSE 0 END) as failureCount,
+            ROUND(SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END)::numeric / COUNT(*)::numeric * 100, 2) as successRate,
+            AVG(response_time) as avgResponseTime
+        FROM api_response
+        WHERE execute_time >= NOW() - INTERVAL '${days} days'
+        GROUP BY TO_CHAR(execute_time, 'YYYY-MM-DD')
+        ORDER BY date ASC
+    </select>
+    
+    <!-- 响应码分布 -->
+    <select id="getResponseCodeDistribution" resultType="com.software.dev.entity.Statistics$StatusCount">
+        SELECT 
+            response_code::text as status,
+            COUNT(*) as count
+        FROM api_response
+        WHERE execute_time >= NOW() - INTERVAL '${days} days' 
+            AND response_code IS NOT NULL
+        GROUP BY response_code
+        ORDER BY count DESC
+    </select>
+    
+    <!-- 最近执行记录 -->
+    <select id="getRecentExecutions" resultType="com.software.dev.entity.Statistics">
+        SELECT 
+            r.id,
+            t.task_name as taskName,
+            r.request_url as url,
+            r.status,
+            r.response_time as responseTime,
+            r.execute_time as executeTime
+        FROM api_response r
+        LEFT JOIN api_task t ON r.task_id = t.id
+        WHERE r.execute_time >= NOW() - INTERVAL '${days} days'
+        ORDER BY r.execute_time DESC
+        LIMIT #{limit}
+    </select>
+    
+    <!-- 根据任务ID获取任务统计概览 -->
+    <select id="getTaskOverviewByTaskId" resultType="com.software.dev.entity.Statistics">
+        SELECT 
+            1 as totalTasks,
+            CASE WHEN status = 'RUNNING' THEN 1 ELSE 0 END as runningTasks,
+            CASE WHEN status = 'PAUSED' THEN 1 ELSE 0 END as pausedTasks
+        FROM api_task
+        WHERE id = #{taskId}
+    </select>
+    
+    <!-- 根据任务ID获取执行统计概览 -->
+    <select id="getExecutionOverviewByTaskId" resultType="com.software.dev.entity.Statistics">
+        SELECT 
+            COUNT(*) as totalExecutions,
+            SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount,
+            SUM(CASE WHEN status = 'ERROR' THEN 1 ELSE 0 END) as failureCount,
+            AVG(response_time) as avgResponseTime,
+            MIN(response_time) as minResponseTime,
+            MAX(response_time) as maxResponseTime
+        FROM api_response
+        WHERE task_id = #{taskId} AND execute_time >= NOW() - INTERVAL '${days} days'
+    </select>
+    
+    <!-- 根据任务ID获取任务状态分布 -->
+    <select id="getStatusDistributionByTaskId" resultType="com.software.dev.entity.Statistics$StatusCount">
+        SELECT 
+            status as status,
+            COUNT(*) as count
+        FROM api_task
+        WHERE id = #{taskId}
+        GROUP BY status
+    </select>
+    
+    <!-- 根据任务ID获取每日趋势数据 -->
+    <select id="getDailyTrendsByTaskId" resultType="com.software.dev.entity.Statistics$DailyTrend">
+        SELECT 
+            TO_CHAR(execute_time, 'YYYY-MM-DD') as date,
+            COUNT(*) as executionCount,
+            SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount,
+            SUM(CASE WHEN status = 'ERROR' THEN 1 ELSE 0 END) as failureCount,
+            ROUND(SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END)::numeric / NULLIF(COUNT(*)::numeric, 0) * 100, 2) as successRate,
+            AVG(response_time) as avgResponseTime
+        FROM api_response
+        WHERE task_id = #{taskId} AND execute_time >= NOW() - INTERVAL '${days} days'
+        GROUP BY TO_CHAR(execute_time, 'YYYY-MM-DD')
+        ORDER BY date ASC
+    </select>
+    
+    <!-- 根据任务ID获取响应码分布 -->
+    <select id="getResponseCodeDistributionByTaskId" resultType="com.software.dev.entity.Statistics$StatusCount">
+        SELECT 
+            response_code::text as status,
+            COUNT(*) as count
+        FROM api_response
+        WHERE task_id = #{taskId} AND execute_time >= NOW() - INTERVAL '${days} days' 
+            AND response_code IS NOT NULL
+        GROUP BY response_code
+        ORDER BY count DESC
+    </select>
+    
+    <!-- 获取错误最多的任务排名 (Top 10) -->
+    <select id="getTopErrorTasks" resultType="com.software.dev.entity.Statistics$TaskErrorCount">
+        SELECT 
+            t.id as taskId,
+            t.task_name as taskName,
+            COUNT(r.id) as errorCount
+        FROM api_task t
+        INNER JOIN api_response r ON t.id = r.task_id
+        WHERE r.status = 'ERROR' 
+            AND r.execute_time >= NOW() - INTERVAL '${days} days'
+            <if test="taskId != null and taskId != ''">
+                AND t.id = #{taskId}
+            </if>
+        GROUP BY t.id, t.task_name
+        ORDER BY errorCount DESC
+        LIMIT 10
+    </select>
+    
+    <!-- 获取每日错误趋势 -->
+    <select id="getDailyErrorTrends" resultType="com.software.dev.entity.Statistics$DailyErrorCount">
+        SELECT 
+            TO_CHAR(execute_time, 'YYYY-MM-DD') as date,
+            COUNT(*) as errorCount
+        FROM api_response
+        WHERE status = 'ERROR' 
+            AND execute_time >= NOW() - INTERVAL '${days} days'
+            <if test="taskId != null and taskId != ''">
+                AND task_id = #{taskId}
+            </if>
+        GROUP BY TO_CHAR(execute_time, 'YYYY-MM-DD')
+        ORDER BY date ASC
+    </select>
+
+</mapper>
