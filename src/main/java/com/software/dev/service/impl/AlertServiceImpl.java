@@ -102,7 +102,7 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
-    @Scheduled(cron = "0 0/1 * * * *")
+    @Scheduled(cron = "0 0 * * * ?")
     public void checkAndTriggerAlerts() {
         try {
             // 获取启用警报的任务列表

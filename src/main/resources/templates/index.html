@@ -575,7 +575,7 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h6 class="card-title mb-1">成功次数</h6>
+                                                    <h6 class="card-title mb-1">请求成功</h6>
                                                     <h2 class="mb-0">{{ statistics.successCount || 0 }}</h2>
                                                 </div>
                                                 <i class="fas fa-check-circle fa-3x opacity-50"></i>
@@ -588,23 +588,10 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h6 class="card-title mb-1">失败次数</h6>
+                                                    <h6 class="card-title mb-1">请求失败</h6>
                                                     <h2 class="mb-0">{{ statistics.failureCount || 0 }}</h2>
                                                 </div>
                                                 <i class="fas fa-times-circle fa-3x opacity-50"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3 mb-3">
-                                    <div class="card bg-primary text-white">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <h6 class="card-title mb-1">成功率</h6>
-                                                    <h2 class="mb-0">{{ statistics.successRate || 0 }}%</h2>
-                                                </div>
-                                                <i class="fas fa-percentage fa-3x opacity-50"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -614,10 +601,23 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
-                                                    <h6 class="card-title mb-1">平均响应(ms)</h6>
-                                                    <h2 class="mb-0">{{ statistics.avgResponseTime || 0 }}</h2>
+                                                    <h6 class="card-title mb-1">断言成功</h6>
+                                                    <h2 class="mb-0">{{ statistics.assertionSuccessCount || 0 }}</h2>
                                                 </div>
-                                                <i class="fas fa-clock fa-3x opacity-50"></i>
+                                                <i class="fas fa-shield-alt fa-3x opacity-50"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <div class="card bg-warning text-white">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="card-title mb-1">断言失败</h6>
+                                                    <h2 class="mb-0">{{ statistics.assertionFailureCount || 0 }}</h2>
+                                                </div>
+                                                <i class="fas fa-exclamation-triangle fa-3x opacity-50"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -642,7 +642,7 @@
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h6 class="mb-0">🥧 任务状态分布</h6>
+                                            <h6 class="mb-0">🥧 断言状态分布</h6>
                                         </div>
                                         <div class="card-body">
                                             <canvas id="statusChart" height="200"></canvas>
@@ -665,59 +665,10 @@
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h6 class="mb-0">⚠️ 错误触发趋势</h6>
+                                            <h6 class="mb-0">⚠️ 断言失败趋势</h6>
                                         </div>
                                         <div class="card-body">
                                             <canvas id="errorTrendChart" height="100"></canvas>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 最近执行记录 -->
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="card">
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0">📝 最近执行记录</h6>
-                                            <button class="btn btn-sm btn-outline-primary" @click="loadRecentExecutions">
-                                                <i class="fas fa-sync-alt"></i> 刷新
-                                            </button>
-                                        </div>
-                                        <div class="card-body">
-                                            <table class="table table-striped table-sm">
-                                                <thead>
-                                                    <tr>
-                                                        <th>任务名称</th>
-                                                        <th>URL</th>
-                                                        <th>状态码</th>
-                                                        <th>执行状态</th>
-                                                        <th>响应时间</th>
-                                                        <th>执行时间</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr v-for="log in recentExecutions" :key="log.id">
-                                                        <td>{{ log.taskName }}</td>
-                                                        <td>{{ log.url }}</td>
-                                                        <td>
-                                                            <span class="badge" :class="getStatusCodeClass(log.statusCode)">
-                                                                {{ log.statusCode }}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            <span class="badge" :class="log.status === 'SUCCESS' ? 'bg-success' : 'bg-danger'">
-                                                                {{ log.status === 'SUCCESS' ? '成功' : '失败' }}
-                                                            </span>
-                                                        </td>
-                                                        <td>{{ log.responseTime }}ms</td>
-                                                        <td>{{ formatDateTime(log.executeTime) }}</td>
-                                                    </tr>
-                                                    <tr v-if="recentExecutions.length === 0">
-                                                        <td colspan="6" class="text-center text-muted">暂无执行记录</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
                                         </div>
                                     </div>
                                 </div>
@@ -1090,13 +1041,14 @@
                         totalExecutions: 0,
                         successCount: 0,
                         failureCount: 0,
+                        assertionSuccessCount: 0,
+                        assertionFailureCount: 0,
                         successRate: 0,
                         avgResponseTime: 0,
                         minResponseTime: 0,
                         maxResponseTime: 0,
                         totalAlerts: 0
                     },
-                    recentExecutions: [],
                     loading: {
                         statistics: false
                     },
@@ -1728,6 +1680,8 @@
                             totalExecutions: data.totalExecutions || 0,
                             successCount: data.successCount || 0,
                             failureCount: data.failureCount || 0,
+                            assertionSuccessCount: data.assertionSuccessCount || 0,
+                            assertionFailureCount: data.assertionFailureCount || 0,
                             successRate: data.successRate || 0,
                             avgResponseTime: data.avgResponseTime || 0,
                             minResponseTime: data.minResponseTime || 0,
@@ -1742,9 +1696,8 @@
                             this.drawResponseCodeChart(data.responseCodeDistribution || {});
                         });
                         
-                        // 加载错误趋势和最近执行记录
+                        // 加载断言失败趋势
                         await this.loadErrorStatistics();
-                        await this.loadRecentExecutions();
                     } catch (error) {
                         console.error('Failed to load statistics:', error);
                     } finally {
@@ -1766,16 +1719,6 @@
                         });
                     } catch (error) {
                         console.error('Failed to load error statistics:', error);
-                    }
-                },
-                async loadRecentExecutions() {
-                    try {
-                        const params = { limit: 10, days: this.selectedDays };
-                        const response = await axios.get('/api/statistics/recent', { params });
-                        this.recentExecutions = response.data?.data || [];
-                    } catch (error) {
-                        console.error('Failed to load recent executions:', error);
-                        this.recentExecutions = [];
                     }
                 },
                 changeDays(days) {
@@ -1825,12 +1768,15 @@
                     ctx.lineTo(width - padding, height - padding);
                     ctx.stroke();
                     
+                    // 计算X轴步长（处理只有一个数据点的情况）
+                    const xStep = dates.length > 1 ? chartWidth / (dates.length - 1) : chartWidth / 2;
+                    
                     // 绘制请求次数折线
                     ctx.strokeStyle = '#2563eb';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     executionCounts.forEach((count, index) => {
-                        const x = padding + (chartWidth / (dates.length - 1)) * index;
+                        const x = padding + xStep * index;
                         const y = height - padding - (count / maxExecutions) * chartHeight;
                         if (index === 0) {
                             ctx.moveTo(x, y);
@@ -1845,7 +1791,7 @@
                     ctx.lineWidth = 2;
                     ctx.beginPath();
                     errorRates.forEach((rate, index) => {
-                        const x = padding + (chartWidth / (dates.length - 1)) * index;
+                        const x = padding + xStep * index;
                         const y = height - padding - (rate / maxErrorRate) * chartHeight;
                         if (index === 0) {
                             ctx.moveTo(x, y);
@@ -1894,9 +1840,15 @@
                     let startAngle = -Math.PI / 2;
                     
                     const colors = {
-                        'RUNNING': '#16a34a',
-                        'PAUSED': '#6b7280',
-                        'ERROR': '#dc2626'
+                        'PASSED': '#16a34a',      // 断言通过 - 绿色
+                        'FAILED': '#dc2626',      // 断言失败 - 红色
+                        'NOT_ASSERTED': '#6b7280' // 未配置断言 - 灰色
+                    };
+                    
+                    const statusNames = {
+                        'PASSED': '断言通过',
+                        'FAILED': '断言失败',
+                        'NOT_ASSERTED': '未配置断言'
                     };
                     
                     data.forEach((item, index) => {
@@ -1918,8 +1870,7 @@
                         ctx.fillStyle = '#333';
                         ctx.font = '12px Arial';
                         ctx.textAlign = 'center';
-                        const statusName = item.status === 'RUNNING' ? '运行中' : 
-                                          item.status === 'PAUSED' ? '已暂停' : item.status;
+                        const statusName = statusNames[item.status] || item.status;
                         ctx.fillText(`${statusName}: ${item.count}`, labelX, labelY);
                         
                         startAngle = endAngle;
@@ -2024,6 +1975,9 @@
                     ctx.lineTo(width - padding, height - padding);
                     ctx.stroke();
                     
+                    // 计算X轴步长（处理只有一个数据点的情况）
+                    const xStep = dates.length > 1 ? chartWidth / (dates.length - 1) : chartWidth / 2;
+                    
                     // 绘制面积图
                     ctx.fillStyle = 'rgba(220, 38, 38, 0.2)';
                     ctx.strokeStyle = '#dc2626';
@@ -2031,7 +1985,7 @@
                     
                     ctx.beginPath();
                     errorCounts.forEach((count, index) => {
-                        const x = padding + (chartWidth / (dates.length - 1)) * index;
+                        const x = padding + xStep * index;
                         const y = height - padding - (count / maxErrors) * chartHeight;
                         if (index === 0) {
                             ctx.moveTo(x, height - padding);
@@ -2040,7 +1994,7 @@
                             ctx.lineTo(x, y);
                         }
                     });
-                    ctx.lineTo(padding + chartWidth, height - padding);
+                    ctx.lineTo(padding + xStep * (dates.length - 1), height - padding);
                     ctx.closePath();
                     ctx.fill();
                     ctx.stroke();

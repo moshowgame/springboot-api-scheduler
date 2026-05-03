@@ -49,6 +49,8 @@ public class StatisticsServiceImpl implements StatisticsService {
             statistics.setTotalExecutions(executionOverview.getTotalExecutions());
             statistics.setSuccessCount(executionOverview.getSuccessCount());
             statistics.setFailureCount(executionOverview.getFailureCount());
+            statistics.setAssertionSuccessCount(executionOverview.getAssertionSuccessCount());
+            statistics.setAssertionFailureCount(executionOverview.getAssertionFailureCount());
             statistics.setAvgResponseTime(executionOverview.getAvgResponseTime());
             statistics.setMinResponseTime(executionOverview.getMinResponseTime());
             statistics.setMaxResponseTime(executionOverview.getMaxResponseTime());

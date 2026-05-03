@@ -17,6 +17,8 @@
             COUNT(*) as totalExecutions,
             SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount,
             SUM(CASE WHEN status = 'ERROR' THEN 1 ELSE 0 END) as failureCount,
+            SUM(CASE WHEN all_assertions_passed = true THEN 1 ELSE 0 END) as assertionSuccessCount,
+            SUM(CASE WHEN all_assertions_passed = false THEN 1 ELSE 0 END) as assertionFailureCount,
             AVG(response_time) as avgResponseTime,
             MIN(response_time) as minResponseTime,
             MAX(response_time) as maxResponseTime
@@ -31,13 +33,20 @@
         FROM alert_record
     </select>
     
-    <!-- 任务状态分布 -->
+    <!-- 获取断言状态分布 -->
     <select id="getStatusDistribution" resultType="com.software.dev.entity.Statistics$StatusCount">
         SELECT 
-            status as status,
+            CASE 
+                WHEN all_assertions_passed = true THEN 'PASSED'
+                WHEN all_assertions_passed = false THEN 'FAILED'
+                ELSE 'NOT_ASSERTED'
+            END as status,
             COUNT(*) as count
-        FROM api_task
-        GROUP BY status
+        FROM api_response
+        WHERE execute_time >= NOW() - INTERVAL '7 days'
+            AND all_assertions_passed IS NOT NULL
+        GROUP BY all_assertions_passed
+        ORDER BY count DESC
     </select>
     
     <!-- 每日趋势数据 -->
@@ -99,6 +108,8 @@
             COUNT(*) as totalExecutions,
             SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) as successCount,
             SUM(CASE WHEN status = 'ERROR' THEN 1 ELSE 0 END) as failureCount,
+            SUM(CASE WHEN all_assertions_passed = true THEN 1 ELSE 0 END) as assertionSuccessCount,
+            SUM(CASE WHEN all_assertions_passed = false THEN 1 ELSE 0 END) as assertionFailureCount,
             AVG(response_time) as avgResponseTime,
             MIN(response_time) as minResponseTime,
             MAX(response_time) as maxResponseTime
@@ -106,14 +117,20 @@
         WHERE task_id = #{taskId} AND execute_time >= NOW() - INTERVAL '${days} days'
     </select>
     
-    <!-- 根据任务ID获取任务状态分布 -->
+    <!-- 根据任务ID获取断言状态分布 -->
     <select id="getStatusDistributionByTaskId" resultType="com.software.dev.entity.Statistics$StatusCount">
         SELECT 
-            status as status,
+            CASE 
+                WHEN all_assertions_passed = true THEN 'PASSED'
+                WHEN all_assertions_passed = false THEN 'FAILED'
+                ELSE 'NOT_ASSERTED'
+            END as status,
             COUNT(*) as count
-        FROM api_task
-        WHERE id = #{taskId}
-        GROUP BY status
+        FROM api_response
+        WHERE task_id = #{taskId}
+            AND all_assertions_passed IS NOT NULL
+        GROUP BY all_assertions_passed
+        ORDER BY count DESC
     </select>
     
     <!-- 根据任务ID获取每日趋势数据 -->
@@ -161,13 +178,13 @@
         LIMIT 10
     </select>
     
-    <!-- 获取每日错误趋势 -->
+    <!-- 获取每日断言失败趋势 -->
     <select id="getDailyErrorTrends" resultType="com.software.dev.entity.Statistics$DailyErrorCount">
         SELECT 
             TO_CHAR(execute_time, 'YYYY-MM-DD') as date,
             COUNT(*) as errorCount
         FROM api_response
-        WHERE status = 'ERROR' 
+        WHERE all_assertions_passed = false 
             AND execute_time >= NOW() - INTERVAL '${days} days'
             <if test="taskId != null and taskId != ''">
                 AND task_id = #{taskId}

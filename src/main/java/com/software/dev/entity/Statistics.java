@@ -30,6 +30,12 @@ public class Statistics {
     /** 失败次数 */
     private Long failureCount;
     
+    /** 断言成功次数 */
+    private Long assertionSuccessCount;
+    
+    /** 断言失败次数 */
+    private Long assertionFailureCount;
+    
     /** 执行成功率 */
     private Double successRate;
     
