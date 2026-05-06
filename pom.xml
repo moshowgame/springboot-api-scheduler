@@ -19,7 +19,7 @@
         <okhttp.version>4.12.0</okhttp.version>
         <fastjson2.version>2.0.60</fastjson2.version>
         <lombok.version>1.18.30</lombok.version>
-        <postgresql.version>42.7.3</postgresql.version>
+        <postgresql.version>42.7.11</postgresql.version>
     </properties>
 
     <repositories>
