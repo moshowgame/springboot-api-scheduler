@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" data-theme="modern">
+<head th:replace="~{layout :: head('断言配置')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar('assertions')}"></nav>
+
+<main class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h4 class="mb-0">✅ 断言配置</h4>
+        <select class="form-select form-select-sm" name="taskId" style="width: 280px;"
+                hx-get="/web/assertions/list" hx-target="#assertionList" hx-swap="outerHTML"
+                hx-trigger="change">
+            <option value="">请选择任务</option>
+            <option th:each="t : ${tasks}" th:value="${t.id}" th:text="${t.taskName}"
+                    th:selected="${t.id == selectedTaskId}">任务</option>
+        </select>
+    </div>
+
+    <div th:replace="~{fragments/assertion-list :: list}"></div>
+</main>
+
+<!-- 断言编辑模态框 -->
+<div class="modal fade" id="assertionFormModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

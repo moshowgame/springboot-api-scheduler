@@ -26,6 +26,11 @@ public class ApiResponseServiceImpl implements ApiResponseService {
         return apiResponseMapper.findByTaskId(taskId);
     }
 
+    @Override
+    public ApiResponse findById(String id) {
+        return apiResponseMapper.findById(id);
+    }
+
 
     @Override
     public List<ApiResponse> findAll() {

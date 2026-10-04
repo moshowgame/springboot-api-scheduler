@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 统计数据 ==================== -->
+<div id="dashboardStats" th:fragment="stats">
+
+    <!-- 概览卡片 -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">任务总数</div>
+                    <div class="fs-3 fw-bold" th:text="${stats.totalTasks} ?: 0">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">运行中</div>
+                    <div class="fs-3 fw-bold text-success" th:text="${stats.runningTasks} ?: 0">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">已暂停</div>
+                    <div class="fs-3 fw-bold text-secondary" th:text="${stats.pausedTasks} ?: 0">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">最近 <span th:text="${days}">7</span> 天执行次数</div>
+                    <div class="fs-3 fw-bold" th:text="${stats.totalExecutions} ?: 0">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">成功率</div>
+                    <div class="fs-3 fw-bold text-primary"
+                         th:text="${stats.successRate != null} ? ${#numbers.formatDecimal(stats.successRate, 1, 2)} + '%' : '-'">-</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">成功 / 失败</div>
+                    <div class="fs-4 fw-bold">
+                        <span class="text-success" th:text="${stats.successCount} ?: 0">0</span>
+                        <span class="text-muted">/</span>
+                        <span class="text-danger" th:text="${stats.failureCount} ?: 0">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">平均响应时间</div>
+                    <div class="fs-4 fw-bold"
+                         th:text="${stats.avgResponseTime != null} ? ${stats.avgResponseTime} + ' ms' : '-'">-</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">警报总数</div>
+                    <div class="fs-3 fw-bold text-warning" th:text="${stats.totalAlerts} ?: 0">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <!-- 每日趋势 -->
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header">每日执行趋势</div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>执行次数</th>
+                            <th>成功</th>
+                            <th>失败</th>
+                            <th>成功率</th>
+                            <th>平均响应</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(stats.dailyTrends)}">
+                            <td colspan="6" class="text-center text-muted py-3">暂无数据</td>
+                        </tr>
+                        <tr th:each="d : ${stats.dailyTrends}">
+                            <td th:text="${d.date}">-</td>
+                            <td th:text="${d.executionCount} ?: 0">0</td>
+                            <td class="text-success" th:text="${d.successCount} ?: 0">0</td>
+                            <td class="text-danger" th:text="${d.failureCount} ?: 0">0</td>
+                            <td th:text="${d.successRate != null} ? ${#numbers.formatDecimal(d.successRate, 1, 1)} + '%' : '-'">-</td>
+                            <td th:text="${d.avgResponseTime != null} ? ${d.avgResponseTime} + ' ms' : '-'">-</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <!-- 任务状态分布 -->
+            <div class="card mb-3">
+                <div class="card-header">任务状态分布</div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <tbody>
+                        <tr th:if="${#lists.isEmpty(stats.statusDistribution)}">
+                            <td class="text-center text-muted py-3">暂无数据</td>
+                        </tr>
+                        <tr th:each="s : ${stats.statusDistribution}">
+                            <td>
+                                <span class="badge bg-success" th:if="${s.status == 'RUNNING'}">运行中</span>
+                                <span class="badge bg-secondary" th:if="${s.status != 'RUNNING'}"
+                                      th:text="${s.status}">状态</span>
+                            </td>
+                            <td class="text-end" th:text="${s.count} ?: 0">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 响应码分布 -->
+            <div class="card">
+                <div class="card-header">HTTP 响应码分布</div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <tbody>
+                        <tr th:if="${stats.responseCodeDistribution == null or stats.responseCodeDistribution.isEmpty()}">
+                            <td class="text-center text-muted py-3">暂无数据</td>
+                        </tr>
+                        <tr th:each="entry : ${stats.responseCodeDistribution}">
+                            <td th:text="${entry.key}">200</td>
+                            <td class="text-end" th:text="${entry.value}">0</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -25,6 +25,25 @@
     box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
 }
 
+/* 导航栏内的主题按钮配色 */
+.theme-btn.theme-modern {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    color: #fff;
+}
+
+.theme-btn.theme-mario {
+    background: #e52521;
+    color: #fff;
+}
+
+.theme-btn:not(.active) {
+    opacity: 0.7;
+}
+
+.theme-btn:not(.active):hover {
+    opacity: 1;
+}
+
 /* 现代化主题 (默认) */
 :root[data-theme="modern"] {
     --primary-color: #6366f1;

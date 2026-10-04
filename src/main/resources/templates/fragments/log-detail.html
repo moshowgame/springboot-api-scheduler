@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 执行日志详情 ==================== -->
+<div th:fragment="modalContent">
+    <div class="modal-header">
+        <h5 class="modal-title">执行详情</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+    </div>
+    <div class="modal-body" th:if="${resp == null}">
+        <p class="text-muted mb-0">记录不存在或已被清理。</p>
+    </div>
+    <div class="modal-body" th:if="${resp != null}">
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <div class="text-muted small">任务</div>
+                <div th:text="${taskName}">-</div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-muted small">执行时间</div>
+                <div th:text="${resp.executeTime != null} ? ${#temporals.format(resp.executeTime, 'yyyy-MM-dd HH:mm:ss')} : '-'">-</div>
+            </div>
+            <div class="col-12">
+                <div class="text-muted small">请求地址</div>
+                <div class="text-break">
+                    <span class="method-badge"
+                          th:classappend="${'method-' + #strings.toLowerCase(resp.requestMethod)}"
+                          th:text="${resp.requestMethod}">GET</span>
+                    <span th:text="${resp.requestUrl}">url</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">响应状态码</div>
+                <div th:text="${resp.responseCode} ?: '-'">-</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">响应时间</div>
+                <div th:text="${resp.responseTime != null} ? ${resp.responseTime} + ' ms' : '-'">-</div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-muted small">执行结果</div>
+                <div>
+                    <span class="badge bg-success" th:if="${resp.status == 'SUCCESS'}">成功</span>
+                    <span class="badge bg-danger" th:if="${resp.status != 'SUCCESS'}"
+                          th:text="${resp.status}">FAILED</span>
+                </div>
+            </div>
+            <div class="col-12" th:if="${resp.errorMessage}">
+                <div class="text-muted small">错误信息</div>
+                <div class="text-danger text-break" th:text="${resp.errorMessage}"></div>
+            </div>
+        </div>
+
+        <div class="mb-3" th:if="${resp.requestHeaders}">
+            <div class="text-muted small mb-1">请求头</div>
+            <pre class="bg-light border rounded p-2 mb-0" style="max-height: 160px; overflow: auto;"
+                 th:text="${resp.requestHeaders}"></pre>
+        </div>
+
+        <div class="mb-3" th:if="${resp.requestParams}">
+            <div class="text-muted small mb-1">请求参数</div>
+            <pre class="bg-light border rounded p-2 mb-0" style="max-height: 160px; overflow: auto;"
+                 th:text="${resp.requestParams}"></pre>
+        </div>
+
+        <div class="mb-3" th:if="${resp.responseBody}">
+            <div class="text-muted small mb-1">响应体</div>
+            <pre class="bg-light border rounded p-2 mb-0" style="max-height: 280px; overflow: auto;"
+                 th:text="${resp.responseBody}"></pre>
+        </div>
+
+        <div th:if="${resp.assertionResult}">
+            <div class="text-muted small mb-1">断言结果</div>
+            <pre class="bg-light border rounded p-2 mb-0" style="max-height: 200px; overflow: auto;"
+                 th:text="${resp.assertionResult}"></pre>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+    </div>
+</div>
+
+</body>
+</html>

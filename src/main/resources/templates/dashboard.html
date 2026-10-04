@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" data-theme="modern">
+<head th:replace="~{layout :: head('数据统计')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar('dashboard')}"></nav>
+
+<main class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h4 class="mb-0">📊 数据统计</h4>
+        <form class="d-flex flex-wrap gap-2" hx-get="/web/dashboard/stats"
+              hx-target="#dashboardStats" hx-swap="outerHTML">
+            <select class="form-select form-select-sm" name="days" style="width: 130px;">
+                <option th:each="d : ${ {7, 14, 30, 90} }" th:value="${d}"
+                        th:text="'最近 ' + ${d} + ' 天'" th:selected="${d == days}">最近 7 天</option>
+            </select>
+            <select class="form-select form-select-sm" name="taskId" style="width: 200px;">
+                <option value="">全部任务</option>
+                <option th:each="t : ${tasks}" th:value="${t.id}" th:text="${t.taskName}"
+                        th:selected="${t.id == filterTaskId}">任务</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm text-nowrap">查询</button>
+        </form>
+    </div>
+
+    <div th:replace="~{fragments/dashboard-stats :: stats}"></div>
+</main>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 执行日志表格 ==================== -->
+<div id="logTable" th:fragment="table">
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 170px;">执行时间</th>
+                    <th>请求</th>
+                    <th style="width: 90px;">方法</th>
+                    <th style="width: 90px;">状态码</th>
+                    <th style="width: 110px;">响应时间</th>
+                    <th style="width: 100px;">断言结果</th>
+                    <th style="width: 90px;">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(logs)}">
+                    <td colspan="7" class="text-center text-muted py-4">暂无执行记录</td>
+                </tr>
+                <tr th:each="log : ${logs}">
+                    <td class="small"
+                        th:text="${log.executeTime != null} ? ${#temporals.format(log.executeTime, 'yyyy-MM-dd HH:mm:ss')} : '-'">-</td>
+                    <td class="small">
+                        <div class="text-break" th:text="${log.requestUrl}">url</div>
+                        <div class="text-muted" th:text="${log.taskId}">taskId</div>
+                    </td>
+                    <td>
+                        <span class="method-badge"
+                              th:classappend="${'method-' + #strings.toLowerCase(log.requestMethod)}"
+                              th:text="${log.requestMethod}">GET</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${log.responseCode != null and log.responseCode ge 200 and log.responseCode lt 400} ? 'bg-success' : 'bg-danger'"
+                              th:text="${log.responseCode} ?: '-'">200</span>
+                    </td>
+                    <td class="small" th:text="${log.responseTime != null} ? ${log.responseTime} + ' ms' : '-'">-</td>
+                    <td>
+                        <span th:if="${log.allAssertionsPassed == null}" class="badge bg-secondary">未校验</span>
+                        <span th:if="${log.allAssertionsPassed}" class="badge bg-success">通过</span>
+                        <span th:if="${log.allAssertionsPassed != null and !log.allAssertionsPassed}"
+                              class="badge bg-danger">失败</span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                data-bs-toggle="modal" data-bs-target="#logDetailModal"
+                                th:attr="hx-get='/web/logs/' + ${log.id} + '/detail'"
+                                hx-target="#logDetailModal .modal-content" hx-swap="innerHTML">详情</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="text-muted small"
+                  th:text="'共 ' + ${total} + ' 条，第 ' + ${page} + ' / ' + ${totalPages} + ' 页'">共 0 条</span>
+            <nav th:if="${totalPages gt 1}">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:each="pl : ${pageLinks}"
+                        th:classappend="${pl['active']} ? 'active' : ''">
+                        <a class="page-link" href="#"
+                           th:attr="hx-get=${pl['url']}"
+                           hx-target="#logTable" hx-swap="outerHTML"
+                           th:text="${pl['num']}">1</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

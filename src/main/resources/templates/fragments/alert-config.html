@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 警报配置表单 ==================== -->
+<div th:fragment="modalContent">
+    <div class="modal-header">
+        <h5 class="modal-title">
+            警报配置
+            <small class="text-muted" th:if="${task != null}" th:text="' - ' + ${task.taskName}"></small>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+    </div>
+    <form hx-post="/web/alerts/config" hx-target="#alertTable" hx-swap="outerHTML">
+        <div class="modal-body">
+            <input type="hidden" name="taskId" th:value="${config?.taskId}">
+
+            <div class="alert alert-info py-2 small">
+                当任务在检查间隔内的断言失败率达到阈值时，系统会向下方配置的 API 地址发送通知。
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">失败率阈值 (%)</label>
+                    <input type="number" class="form-control" name="failureRateThreshold" min="0" max="100"
+                           th:value="${config?.failureRateThreshold} ?: 50">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">检查间隔 (分钟)</label>
+                    <input type="number" class="form-control" name="checkInterval" min="1"
+                           th:value="${config?.checkInterval} ?: 60">
+                </div>
+
+                <div class="col-md-8">
+                    <label class="form-label">警报 API 地址</label>
+                    <input type="text" class="form-control" name="apiUrl"
+                           th:value="${config?.apiUrl}" placeholder="https://example.com/webhook">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">请求方法</label>
+                    <select class="form-select" name="httpMethod">
+                        <option th:each="m : ${ {'POST','GET','PUT'} }"
+                                th:value="${m}" th:text="${m}"
+                                th:selected="${config?.httpMethod == m}">POST</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">请求头 (JSON)</label>
+                    <textarea class="form-control" name="headers" rows="3"
+                              th:text="${config?.headers}" placeholder='{"Content-Type":"application/json"}'></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">请求体 (JSON)</label>
+                    <textarea class="form-control" name="body" rows="3"
+                              th:text="${config?.body}"
+                              placeholder='{"task":"${taskName}","rate":"${failureRate}"}'></textarea>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">是否启用</label>
+                    <select class="form-select" name="enabled">
+                        <option value="true" th:selected="${config?.enabled == null or config.enabled}">启用</option>
+                        <option value="false" th:selected="${config?.enabled != null and !config.enabled}">禁用</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-text mt-3">
+                请求体支持变量：${taskId}、${taskName}、${failureRate}、${failureCount}、${totalCount}
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

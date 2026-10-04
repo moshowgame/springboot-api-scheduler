@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" data-theme="modern">
+<head th:replace="~{layout :: head('执行日志')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar('logs')}"></nav>
+
+<main class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h4 class="mb-0">📜 执行日志</h4>
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/logs}">重置筛选</a>
+    </div>
+
+    <form class="card card-body mb-3" hx-get="/web/logs/list"
+          hx-target="#logTable" hx-swap="outerHTML">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small mb-1">任务</label>
+                <select class="form-select form-select-sm" name="taskId">
+                    <option value="">全部任务</option>
+                    <option th:each="t : ${tasks}" th:value="${t.id}" th:text="${t.taskName}"
+                            th:selected="${t.id == filterTaskId}">任务</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">开始日期</label>
+                <input type="date" class="form-control form-control-sm" name="startTime"
+                       th:value="${filterStartTime}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">结束日期</label>
+                <input type="date" class="form-control form-control-sm" name="endTime"
+                       th:value="${filterEndTime}">
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary btn-sm">查询</button>
+            </div>
+        </div>
+    </form>
+
+    <div th:replace="~{fragments/log-list :: table}"></div>
+</main>
+
+<!-- 日志详情模态框 -->
+<div class="modal fade" id="logDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

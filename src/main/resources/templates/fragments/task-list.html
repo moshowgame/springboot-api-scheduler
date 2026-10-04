@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 任务表格（HTMX 局部刷新目标） ==================== -->
+<div id="taskTable" th:fragment="table">
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 36px;"></th>
+                    <th>任务</th>
+                    <th style="width: 90px;">方法</th>
+                    <th style="width: 100px;">状态</th>
+                    <th style="width: 100px;">警报</th>
+                    <th style="width: 160px;">Cron</th>
+                    <th style="width: 170px;">上次执行</th>
+                    <th style="width: 220px;">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(tasks)}">
+                    <td colspan="8" class="text-center text-muted py-4">
+                        暂无任务，点击右上角「新建任务」开始。
+                    </td>
+                </tr>
+                <tr th:each="task : ${tasks}">
+                    <td>
+                        <input class="form-check-input" type="checkbox" name="ids" th:value="${task.id}">
+                    </td>
+                    <td>
+                        <div class="task-name" th:text="${task.taskName} ?: '(未命名)'">任务名</div>
+                        <div class="text-muted small text-break" th:text="${task.url}">url</div>
+                        <div class="text-muted small" th:if="${task.description}" th:text="${task.description}">描述</div>
+                    </td>
+                    <td>
+                        <span class="method-badge"
+                              th:classappend="${'method-' + #strings.toLowerCase(task.method)}"
+                              th:text="${task.method}">GET</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${task.status == 'RUNNING'} ? 'bg-success' : 'bg-secondary'"
+                              th:text="${task.status == 'RUNNING'} ? '运行中' : '已暂停'">状态</span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${task.alertEnabled} ? 'bg-warning text-dark' : 'bg-light text-muted'"
+                              th:text="${task.alertEnabled} ? '已启用' : '未启用'">警报</span>
+                    </td>
+                    <td class="small text-muted" th:text="${task.cronExpression} ?: '-'">-</td>
+                    <td class="small text-muted"
+                        th:text="${task.lastExecuteTime != null} ? ${#temporals.format(task.lastExecuteTime, 'yyyy-MM-dd HH:mm:ss')} : '-'">-</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-primary" title="编辑"
+                                    data-bs-toggle="modal" data-bs-target="#taskFormModal"
+                                    th:attr="hx-get='/web/tasks/' + ${task.id} + '/edit'"
+                                    hx-target="#taskFormModal .modal-content" hx-swap="innerHTML">编辑</button>
+
+                            <button type="button" class="btn btn-outline-success" title="启动"
+                                    th:if="${task.status != 'RUNNING'}"
+                                    th:attr="hx-post='/web/tasks/' + ${task.id} + '/start'"
+                                    hx-target="#taskTable" hx-swap="outerHTML">启动</button>
+
+                            <button type="button" class="btn btn-outline-warning" title="暂停"
+                                    th:if="${task.status == 'RUNNING'}"
+                                    th:attr="hx-post='/web/tasks/' + ${task.id} + '/pause'"
+                                    hx-target="#taskTable" hx-swap="outerHTML">暂停</button>
+
+                            <button type="button" class="btn btn-outline-info" title="立即执行一次"
+                                    th:attr="hx-post='/web/tasks/' + ${task.id} + '/execute'"
+                                    hx-target="#taskTable" hx-swap="outerHTML">执行</button>
+
+                            <button type="button" class="btn btn-outline-dark" title="警报开关"
+                                    th:if="${!task.alertEnabled}"
+                                    th:attr="hx-post='/web/tasks/' + ${task.id} + '/alert/true'"
+                                    hx-target="#taskTable" hx-swap="outerHTML">启用警报</button>
+                            <button type="button" class="btn btn-outline-secondary" title="警报开关"
+                                    th:if="${task.alertEnabled}"
+                                    th:attr="hx-post='/web/tasks/' + ${task.id} + '/alert/false'"
+                                    hx-target="#taskTable" hx-swap="outerHTML">禁用警报</button>
+
+                            <button type="button" class="btn btn-outline-danger" title="删除"
+                                    hx-confirm="确定删除该任务吗？删除后不可恢复。"
+                                    th:attr="hx-post='/web/tasks/' + ${task.id} + '/delete'"
+                                    hx-target="#taskTable" hx-swap="outerHTML">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <span class="text-muted small" th:text="'共 ' + ${#lists.size(tasks)} + ' 个任务'">共 0 个任务</span>
+            <span class="text-muted small">勾选左侧复选框后可执行批量操作</span>
+        </div>
+    </div>
+
+    <script th:if="${message}" th:inline="javascript">
+        window.appToast && window.appToast(/*[[${message}]]*/ '');
+        window.appCloseModal && window.appCloseModal();
+    </script>
+</div>
+
+</body>
+</html>

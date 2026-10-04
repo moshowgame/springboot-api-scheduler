@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 断言编辑（每个任务仅一条断言） ==================== -->
+<div th:fragment="modalContent">
+    <div class="modal-header">
+        <h5 class="modal-title">
+            断言配置
+            <small class="text-muted" th:if="${taskName}" th:text="' - ' + ${taskName}"></small>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+    </div>
+    <form hx-post="/web/assertions/save" hx-target="#assertionList" hx-swap="outerHTML">
+        <input type="hidden" name="taskId" th:value="${taskId}">
+        <div class="modal-body">
+            <div class="alert alert-info py-2 small">
+                每个任务仅保留一条断言配置。断言类型：HTTP 状态码 / 响应包含关键字 / JSON 路径存在。不选择类型即表示清空该任务的断言。
+            </div>
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">断言类型</label>
+                    <select class="form-select form-select-sm" name="assertionType">
+                        <option value="">不配置（清空）</option>
+                        <option value="HTTP_CODE" th:selected="${assertion != null and assertion.assertionType == 'HTTP_CODE'}">HTTP 状态码</option>
+                        <option value="JSON_CONTAINS" th:selected="${assertion != null and assertion.assertionType == 'JSON_CONTAINS'}">响应包含关键字</option>
+                        <option value="JSON_PATH" th:selected="${assertion != null and assertion.assertionType == 'JSON_PATH'}">JSON 路径存在</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label small mb-1">期望值</label>
+                    <input type="text" class="form-control form-control-sm" name="expectedValue"
+                           th:value="${assertion != null ? assertion.expectedValue : ''}"
+                           placeholder="HTTP 状态码填 200；关键字填文本；JSON 路径填 $.data.id">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

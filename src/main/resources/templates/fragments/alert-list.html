@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 警报记录表格 ==================== -->
+<div id="alertTable" th:fragment="table">
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 170px;">警报时间</th>
+                    <th style="width: 180px;">任务</th>
+                    <th style="width: 90px;">失败率</th>
+                    <th style="width: 120px;">失败 / 总数</th>
+                    <th>警报消息 / 响应</th>
+                    <th style="width: 110px;">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(records)}">
+                    <td colspan="6" class="text-center text-muted py-4">暂无警报记录</td>
+                </tr>
+                <tr th:each="r : ${records}">
+                    <td class="small"
+                        th:text="${r.alertTime != null} ? ${#temporals.format(r.alertTime, 'yyyy-MM-dd HH:mm:ss')} : '-'">-</td>
+                    <td class="small">
+                        <div th:text="${r.taskName}">任务名</div>
+                        <div class="text-muted" th:text="${r.taskId}">taskId</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-danger" th:text="${r.failureRate} + '%'">0%</span>
+                    </td>
+                    <td class="small" th:text="${r.failureCount} + ' / ' + ${r.totalCount}">0 / 0</td>
+                    <td class="small">
+                        <div class="text-break" th:text="${r.alertMessage}">消息</div>
+                        <div class="text-muted text-break" th:if="${r.apiUrl}" th:text="${r.apiUrl}">url</div>
+                        <details th:if="${r.response}">
+                            <summary class="text-primary" style="cursor: pointer;">查看响应</summary>
+                            <pre class="bg-light border rounded p-2 mt-1 mb-0"
+                                 style="max-height: 160px; overflow: auto;" th:text="${r.response}"></pre>
+                        </details>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                data-bs-toggle="modal" data-bs-target="#alertConfigModal"
+                                th:attr="hx-get='/web/alerts/config-form?taskId=' + ${r.taskId}"
+                                hx-target="#alertConfigModal .modal-content" hx-swap="innerHTML">配置警报</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="text-muted small"
+                  th:text="'共 ' + ${total} + ' 条，第 ' + ${page} + ' / ' + ${totalPages} + ' 页'">共 0 条</span>
+            <nav th:if="${totalPages gt 1}">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:each="pl : ${pageLinks}"
+                        th:classappend="${pl['active']} ? 'active' : ''">
+                        <a class="page-link" href="#"
+                           th:attr="hx-get=${pl['url']}"
+                           hx-target="#alertTable" hx-swap="outerHTML"
+                           th:text="${pl['num']}">1</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <script th:if="${message}" th:inline="javascript">
+        window.appToast && window.appToast(/*[[${message}]]*/ '');
+        window.appCloseModal && window.appCloseModal();
+    </script>
+</div>
+
+</body>
+</html>

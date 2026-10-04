@@ -35,6 +35,10 @@
         ORDER BY execute_time DESC
     </select>
 
+    <select id="findById" parameterType="String" resultMap="ApiResponseResult">
+        SELECT * FROM api_response WHERE id = #{id}
+    </select>
+
     <select id="findAll" resultMap="ApiResponseResult">
         SELECT * FROM api_response ORDER BY execute_time DESC
     </select>

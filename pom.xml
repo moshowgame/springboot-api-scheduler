@@ -18,7 +18,7 @@
         <mybatis-spring-boot.version>3.0.3</mybatis-spring-boot.version>
         <okhttp.version>4.12.0</okhttp.version>
         <fastjson2.version>2.0.60</fastjson2.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.48</lombok.version>
         <postgresql.version>42.7.11</postgresql.version>
     </properties>
 
@@ -225,6 +225,13 @@
                     <source>17</source>
                     <target>17</target>
                     <parameters>true</parameters>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

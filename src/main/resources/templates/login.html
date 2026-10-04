@@ -1,176 +1,54 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录 - API Scheduler</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            max-width: 400px;
-            width: 100%;
-        }
-        .login-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-        .login-body {
-            padding: 2rem;
-        }
-        .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        }
-        .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 0.75rem;
-            font-weight: 500;
-        }
-        .btn-login:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        }
-        .alert {
-            border-radius: 10px;
-        }
-        .spinner-border {
-            width: 1rem;
-            height: 1rem;
-        }
-    </style>
-</head>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" data-theme="modern">
+<head th:replace="~{layout :: head('登录')}"></head>
 <body>
-    <div id="app">
-        <div class="login-container">
-            <div class="login-header">
-                <h3 class="mb-0">🚀 API Scheduler</h3>
-                <p class="mb-0 mt-2">轻量级任务调度系统</p>
+<div class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="card" style="max-width: 400px; width: 100%;">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <h3 class="mb-1">🚀 API Scheduler</h3>
+                <p class="text-muted mb-0">轻量级任务调度系统</p>
             </div>
-            <div class="login-body">
-                <form @submit.prevent="login">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">用户名</label>
-                        <div class="input-group">
-                            <span class="input-group-text">👤</span>
-                            <input type="text" class="form-control" id="username" v-model="loginForm.username" 
-                                   placeholder="请输入用户名" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">密码</label>
-                        <div class="input-group">
-                            <span class="input-group-text">🔒</span>
-                            <input type="password" class="form-control" id="password" v-model="loginForm.password" 
-                                   placeholder="请输入密码" required>
-                        </div>
-                    </div>
-                    
-                    <div v-if="errorMessage" class="alert alert-danger" role="alert">
-                        <small>{{ errorMessage }}</small>
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-login" :disabled="loading">
-                            <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-                            {{ loading ? '登录中...' : '登录' }}
-                        </button>
-                    </div>
-                </form>
-                
-                <div class="text-center mt-3">
-                    <small class="text-muted">
-                        默认账号：admin / admin123
-                    </small>
-                </div>
-                
-                <div class="text-center mt-4">
-                    <div class="d-flex justify-content-center gap-3">
-                        <a href="https://github.com/moshowgame/springboot-api-scheduler" target="_blank" 
-                           class="btn btn-outline-dark btn-sm d-flex align-items-center">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="me-1">
-                                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                            </svg>
-                            GitHub
-                        </a>
-                        <a href="https://zhengkai.blog.csdn.net/" target="_blank" 
-                           class="btn btn-outline-danger btn-sm d-flex align-items-center">
-                            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" class="me-1">
-                                <path d="M1.884.011H14.116c.936 0 1.704.768 1.704 1.704v12.232c0 .936-.768 1.704-1.704 1.704H1.884A1.704 1.704 0 0 1 .18 14.947V2.715c0-.936.768-1.704 1.704-1.704ZM8.068 4.736c-1.768 0-3.2 1.432-3.2 3.2 0 1.416.92 2.616 2.192 3.04.16.028.216-.068.216-.152l-.004-.56c-.888.192-1.076-.428-1.076-.428-.144-.372-.356-.472-.356-.472-.292-.2.024-.196.024-.196.32.024.492.328.492.328.288.492.748.352.932.272.028-.208.112-.352.204-.432-.712-.08-1.46-.356-1.46-1.584 0-.352.124-.64.332-.864-.032-.08-.144-.408.032-.848 0 0 .272-.088.892.328.26-.072.536-.108.812-.108.276 0 .552.036.812.108.62-.416.892-.328.892-.328.176.44.064.768.032.848.208.224.332.512.332.864 0 1.232-.748 1.504-1.46 1.584.116.1.216.292.216.588 0 .424-.004.768-.004.872 0 .084.056.184.216.152 1.272-.424 2.192-1.624 2.192-3.04 0-1.768-1.432-3.2-3.2-3.2Z"/>
-                            </svg>
-                            CSDN
-                        </a>
+
+            <div th:if="${error}" class="alert alert-danger py-2" role="alert">
+                <small th:text="${error}">用户名或密码错误</small>
+            </div>
+
+            <form th:action="@{/web/auth/login}" method="post">
+                <div class="mb-3">
+                    <label for="username" class="form-label">用户名</label>
+                    <div class="input-group">
+                        <span class="input-group-text">👤</span>
+                        <input type="text" class="form-control" id="username" name="username"
+                               th:value="${username}" placeholder="请输入用户名" required autofocus>
                     </div>
                 </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">密码</label>
+                    <div class="input-group">
+                        <span class="input-group-text">🔒</span>
+                        <input type="password" class="form-control" id="password" name="password"
+                               placeholder="请输入密码" required>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">登录</button>
+                </div>
+            </form>
+
+            <div class="text-center mt-3">
+                <small class="text-muted">默认账号：admin / admin123</small>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="https://github.com/moshowgame/springboot-api-scheduler" target="_blank"
+                   class="btn btn-outline-dark btn-sm me-2">GitHub</a>
+                <a href="https://zhengkai.blog.csdn.net/" target="_blank"
+                   class="btn btn-outline-danger btn-sm">CSDN</a>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script>
-        const { createApp } = Vue;
-
-        createApp({
-            data() {
-                return {
-                    loginForm: {
-                        username: '',
-                        password: ''
-                    },
-                    loading: false,
-                    errorMessage: ''
-                }
-            },
-            methods: {
-                async login() {
-                    this.loading = true;
-                    this.errorMessage = '';
-                    
-                    try {
-                        const response = await axios.post('/api/auth/login', this.loginForm);
-                        
-                        if (response.data.success) {
-                            // 登录成功，跳转到主页
-                            window.location.href = '/';
-                        } else {
-                            this.errorMessage = response.data.message || '登录失败';
-                        }
-                    } catch (error) {
-                        console.error('登录错误:', error);
-                        if (error.response && error.response.data) {
-                            this.errorMessage = error.response.data.message || '登录失败';
-                        } else {
-                            this.errorMessage = '网络错误，请稍后重试';
-                        }
-                    } finally {
-                        this.loading = false;
-                    }
-                }
-            },
-            mounted() {
-                // 检查是否已经登录
-                axios.get('/api/auth/check').then(response => {
-                    if (response.data.authenticated) {
-                        window.location.href = '/';
-                    }
-                }).catch(() => {
-                    // 忽略检查错误
-                });
-            }
-        }).mount('#app');
-    </script>
+</div>
+<div th:replace="~{layout :: scripts}"></div>
 </body>
 </html>

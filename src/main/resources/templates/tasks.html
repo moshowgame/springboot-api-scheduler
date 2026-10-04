@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" data-theme="modern">
+<head th:replace="~{layout :: head('任务管理')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar('tasks')}"></nav>
+
+<main class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h4 class="mb-0">📋 任务管理</h4>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                    hx-get="/web/tasks/list" hx-target="#taskTable" hx-swap="outerHTML">刷新</button>
+            <button type="button" class="btn btn-primary btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#taskFormModal"
+                    hx-get="/web/tasks/new"
+                    hx-target="#taskFormModal .modal-content" hx-swap="innerHTML">+ 新建任务</button>
+        </div>
+    </div>
+
+    <!-- 批量操作：勾选 #taskTable 内的复选框后执行 -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="btn btn-outline-success btn-sm"
+                hx-post="/web/tasks/batch" hx-vals='{"action":"start"}'
+                hx-include="#taskTable" hx-target="#taskTable" hx-swap="outerHTML">批量启动</button>
+        <button type="button" class="btn btn-outline-warning btn-sm"
+                hx-post="/web/tasks/batch" hx-vals='{"action":"pause"}'
+                hx-include="#taskTable" hx-target="#taskTable" hx-swap="outerHTML">批量暂停</button>
+        <button type="button" class="btn btn-outline-dark btn-sm"
+                hx-post="/web/tasks/batch" hx-vals='{"action":"enableAlert"}'
+                hx-include="#taskTable" hx-target="#taskTable" hx-swap="outerHTML">批量启用警报</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm"
+                hx-post="/web/tasks/batch" hx-vals='{"action":"disableAlert"}'
+                hx-include="#taskTable" hx-target="#taskTable" hx-swap="outerHTML">批量禁用警报</button>
+        <button type="button" class="btn btn-outline-danger btn-sm"
+                hx-post="/web/tasks/batch" hx-vals='{"action":"delete"}'
+                hx-include="#taskTable" hx-target="#taskTable" hx-swap="outerHTML"
+                hx-confirm="确定批量删除所选任务吗？">批量删除</button>
+    </div>
+
+    <div th:replace="~{fragments/task-list :: table}"></div>
+</main>
+
+<!-- 任务表单模态框 -->
+<div class="modal fade" id="taskFormModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

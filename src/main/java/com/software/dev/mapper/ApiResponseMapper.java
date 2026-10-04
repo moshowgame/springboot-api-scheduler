@@ -12,6 +12,7 @@ public interface ApiResponseMapper {
 
     List<ApiResponse> findByTaskId(@Param("taskId") String taskId);
 
+    ApiResponse findById(@Param("id") String id);
 
     List<ApiResponse> findAll();
 

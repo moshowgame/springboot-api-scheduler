@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 任务新建 / 编辑表单 ==================== -->
+<div th:fragment="modalContent">
+    <div class="modal-header">
+        <h5 class="modal-title" th:text="${task != null and task.id != null} ? '编辑任务' : '新建任务'">新建任务</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+    </div>
+    <form hx-post="/web/tasks/save" hx-target="#taskTable" hx-swap="outerHTML">
+        <div class="modal-body">
+            <input type="hidden" name="id" th:value="${task?.id}">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">任务名称 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="taskName" required
+                           th:value="${task?.taskName}" placeholder="例如：健康检查">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">请求方法</label>
+                    <select class="form-select" name="method">
+                        <option th:each="m : ${ {'GET','POST','PUT','DELETE','PATCH'} }"
+                                th:value="${m}" th:text="${m}"
+                                th:selected="${task?.method == m}">GET</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">超时(秒)</label>
+                    <input type="number" class="form-control" name="timeout" min="1"
+                           th:value="${task?.timeout} ?: 30">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">请求地址 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="url" required
+                           th:value="${task?.url}" placeholder="https://example.com/api/health">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Cron 表达式</label>
+                    <input type="text" class="form-control" name="cronExpression"
+                           th:value="${task?.cronExpression}" placeholder="0 0/5 * * * ?">
+                    <div class="form-text">如 0 0/5 * * * ? 表示每 5 分钟执行一次</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">描述</label>
+                    <input type="text" class="form-control" name="description"
+                           th:value="${task?.description}" placeholder="可选">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">请求头 (JSON)</label>
+                    <textarea class="form-control" name="headers" rows="3"
+                              th:text="${task?.headers}" placeholder='{"Content-Type":"application/json"}'></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">请求参数 (JSON)</label>
+                    <textarea class="form-control" name="parameters" rows="3"
+                              th:text="${task?.parameters}" placeholder='{"key":"value"}'></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ==================== 断言列表 ==================== -->
+<div id="assertionList" th:fragment="list">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="small text-muted">
+                共 <span th:text="${#lists.size(assertions)}">0</span> 条断言
+            </span>
+            <div class="d-flex gap-2" th:if="${taskId != null and !taskId.isEmpty()}">
+                <button type="button" class="btn btn-sm btn-primary"
+                        data-bs-toggle="modal" data-bs-target="#assertionFormModal"
+                        th:attr="hx-get='/web/assertions/' + ${taskId} + '/edit'"
+                        hx-target="#assertionFormModal .modal-content" hx-swap="innerHTML"
+                        th:text="${#lists.isEmpty(assertions)} ? '配置断言' : '编辑断言'">编辑断言</button>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        th:if="${!#lists.isEmpty(assertions)}"
+                        th:attr="hx-post='/web/assertions/' + ${taskId} + '/clear'"
+                        hx-target="#assertionList" hx-swap="outerHTML"
+                        hx-confirm="确定清空该任务的所有断言吗？">清空</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th style="width: 60px;">#</th>
+                    <th style="width: 190px;">断言类型</th>
+                    <th>期望值</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(assertions)}">
+                    <td colspan="3" class="text-center text-muted py-4">该任务尚未配置断言</td>
+                </tr>
+                <tr th:each="a, st : ${assertions}">
+                    <td th:text="${st.count}">1</td>
+                    <td>
+                        <span class="badge bg-info text-dark" th:if="${a.assertionType == 'HTTP_CODE'}">HTTP 状态码</span>
+                        <span class="badge bg-info text-dark" th:if="${a.assertionType == 'JSON_CONTAINS'}">响应包含关键字</span>
+                        <span class="badge bg-info text-dark" th:if="${a.assertionType == 'JSON_PATH'}">JSON 路径存在</span>
+                        <span class="badge bg-secondary" th:if="${a.assertionType != 'HTTP_CODE'
+                                and a.assertionType != 'JSON_CONTAINS' and a.assertionType != 'JSON_PATH'}"
+                              th:text="${a.assertionType}">其他</span>
+                    </td>
+                    <td class="text-break" th:text="${a.expectedValue}">期望值</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script th:if="${message}" th:inline="javascript">
+        window.appToast && window.appToast(/*[[${message}]]*/ '');
+        window.appCloseModal && window.appCloseModal();
+    </script>
+</div>
+
+</body>
+</html>

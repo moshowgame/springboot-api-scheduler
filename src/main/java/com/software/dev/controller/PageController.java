@@ -2,39 +2,37 @@ package com.software.dev.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+
+import jakarta.servlet.http.HttpSession;
 
 /**
- * 页面控制器 - 提供Vue应用的SPA入口
- * 
- * 注意：这是一个Vue 3单页应用，所有前端路由都通过Vue Router处理。
- * Spring Boot只需要提供主HTML文件，其他路由由前端处理。
+ * 页面控制器 - Thymeleaf 服务端渲染入口
+ * <p>
+ * 各业务页面的完整渲染与 HTMX 片段由对应的 XxxPageController 提供。
  */
 @Controller
-@RequestMapping
 public class PageController {
 
-    /**
-     * 主页面 - Vue应用的入口点
-     * 所有前端路由都通过Vue Router处理
-     * 包括: /dashboard, /tasks, /monitoring, /alerts, /assertions, /test, /profile 等
-     */
-    @GetMapping(value = {"/", "/dashboard", "/tasks", "/monitoring", "/alerts", "/assertions", "/test", "/profile"})
-    public String index() {
-        return "index";
+    /** 首页重定向到数据统计 */
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/dashboard";
     }
 
+    /** 登录页 */
     @GetMapping("/login")
-    public String login() {
+    public String login(HttpSession session) {
+        if (session.getAttribute("user") != null) {
+            return "redirect:/dashboard";
+        }
         return "login";
     }
-    
-    /**
-     * 捕获所有其他前端路由，返回Vue应用
-     * 这样可以确保前端路由刷新时不会出现404错误
-     */
-    @GetMapping(value = {"/404", "/**/{path:[^\\.]*}"})
-    public String catchAll() {
-        return "index";
+
+    /** 退出登录 */
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.removeAttribute("user");
+        session.invalidate();
+        return "redirect:/login";
     }
 }

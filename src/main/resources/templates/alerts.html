@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" data-theme="modern">
+<head th:replace="~{layout :: head('警报记录')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar('alerts')}"></nav>
+
+<main class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h4 class="mb-0">🔔 警报记录</h4>
+        <div class="d-flex gap-2">
+            <select class="form-select form-select-sm" name="taskId" id="alertTaskSelect" style="width: 220px;">
+                <option th:each="t : ${tasks}" th:value="${t.id}" th:text="${t.taskName}">任务</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm text-nowrap"
+                    data-bs-toggle="modal" data-bs-target="#alertConfigModal"
+                    hx-get="/web/alerts/config-form" hx-include="#alertTaskSelect"
+                    hx-target="#alertConfigModal .modal-content" hx-swap="innerHTML">警报配置</button>
+        </div>
+    </div>
+
+    <form class="card card-body mb-3" hx-get="/web/alerts/list"
+          hx-target="#alertTable" hx-swap="outerHTML">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-6">
+                <label class="form-label small mb-1">任务名称</label>
+                <input type="text" class="form-control form-control-sm" name="taskName"
+                       th:value="${filterTaskName}" placeholder="按任务名称筛选">
+            </div>
+            <div class="col-md-3 d-grid">
+                <button type="submit" class="btn btn-primary btn-sm">查询</button>
+            </div>
+            <div class="col-md-3 d-grid">
+                <a class="btn btn-outline-secondary btn-sm" th:href="@{/alerts}">重置</a>
+            </div>
+        </div>
+    </form>
+
+    <div th:replace="~{fragments/alert-list :: table}"></div>
+</main>
+
+<!-- 警报配置模态框 -->
+<div class="modal fade" id="alertConfigModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

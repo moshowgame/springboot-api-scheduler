@@ -8,6 +8,8 @@ public interface ApiResponseService {
     
     List<ApiResponse> findByTaskId(String taskId);
 
+    ApiResponse findById(String id);
+
     List<ApiResponse> findAll();
 
     // 新增统一处理所有条件的方法
