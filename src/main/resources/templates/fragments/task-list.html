@@ -74,7 +74,7 @@
                                     hx-target="#taskTable" hx-swap="outerHTML">执行</button>
 
                             <button type="button" class="btn btn-outline-dark" title="警报开关"
-                                    th:if="${!task.alertEnabled}"
+                                    th:if="${task.alertEnabled == null or !task.alertEnabled}"
                                     th:attr="hx-post='/web/tasks/' + ${task.id} + '/alert/true'"
                                     hx-target="#taskTable" hx-swap="outerHTML">启用警报</button>
                             <button type="button" class="btn btn-outline-secondary" title="警报开关"

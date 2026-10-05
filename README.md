@@ -62,9 +62,10 @@ Powered by Moshow郑锴 , Show more on CSDN https://zhengkai.blog.csdn.net/ | �
 - **Log4j2** - 强大的日志框架
 
 ### 前端技术
+- **Thymeleaf 3.1** - 服务端模板渲染
+- **HTMX 1.9.12** - 局部片段刷新，无需前端构建链
+- **Alpine.js 3.14** - 轻量级交互（主题切换、Cron 快速选择助手）
 - **Bootstrap 5.1.3** - 响应式UI框架
-- **Vue 3** - 渐进式JavaScript框架
-- **Axios** - HTTP请求库
 
 ---
 
@@ -392,6 +393,7 @@ mybatis:
 
 | 日期         | 更新内容                                                                                                            |
 |------------|-----------------------------------------------------------------------------------------------------------------|
+| 2026-10-05 | ✅ 前端改造为 Thymeleaf + HTMX + Alpine.js 多页应用 [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) ✅ 任务表单新增 Cron 常用表达式快速选择助手 ✅ 修复新建任务后任务页 500 等问题 |
 | 2026-05-03 | ✅ 新增数据统计功能，支持多维度数据分析与可视化图表展示 |
 | 2026-02-20 | ✅ 新增双主题切换功能（现代化/马里奥像素风）✅ 任务列表卡片式布局优化|
 | 2025-12-19 | ✅ 前端优化为Vue3+View UI PLUS[FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) |

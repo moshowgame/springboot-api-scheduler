@@ -101,6 +101,22 @@
 }
 
 /* 通用样式重写 */
+/* Bootstrap 5 移除了 .btn 的 white-space:nowrap，窄列按钮（如操作列）中文会逐字竖排，此处恢复 */
+.btn {
+    white-space: nowrap;
+}
+
+/* 导航链接与主题切换按钮同理，防止中文逐字竖排 */
+.navbar .nav-link,
+.theme-btn {
+    white-space: nowrap;
+}
+
+/* 复选框使用主题色，米色背景下更醒目 */
+.form-check-input {
+    accent-color: var(--primary-color);
+}
+
 [data-theme="modern"] body {
     background-color: var(--bg-secondary);
     color: var(--text-primary);
@@ -151,13 +167,17 @@
     border: none;
     border-radius: 12px;
     box-shadow: var(--shadow);
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
     background: var(--bg-card);
 }
 
+/* 统计/图表等网格内卡片保留悬浮上浮；整页大卡片（表格容器）仅加深阴影，避免列表晃动 */
 [data-theme="modern"] .card:hover {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+}
+
+[data-theme="modern"] .row .card:hover {
+    transform: translateY(-2px);
 }
 
 [data-theme="mario"] .card {
@@ -185,7 +205,6 @@
     border-radius: 8px;
     font-weight: 500;
     transition: all 0.2s ease;
-    border: none;
 }
 
 [data-theme="modern"] .btn:hover {
@@ -238,11 +257,31 @@
     border: 2px solid var(--border-color);
 }
 
+/* 像素字体较宽，单元格内容不换行，避免 Cron 等字段断成多行；长 URL 由 .text-break 子元素自行折行 */
+[data-theme="mario"] .table td {
+    white-space: nowrap;
+}
+
+[data-theme="mario"] .table td .text-break {
+    white-space: normal;
+    word-break: break-all;
+}
+
+[data-theme="mario"] .navbar-brand {
+    font-size: 0.95rem;
+}
+
+/* 像素字体较宽，导航栏在 lg 断点被强制单行会撑破视口，允许其折行 */
+[data-theme="mario"] .navbar.navbar-expand-lg {
+    flex-flow: row wrap;
+}
+
 [data-theme="mario"] .table th {
     background: var(--secondary-color);
     color: var(--text-primary);
     border: 2px solid var(--border-color);
     text-align: center;
+    white-space: nowrap;
 }
 
 /* 徽章样式 */
@@ -301,12 +340,25 @@
     border-color: var(--primary-color);
 }
 
+[data-theme="modern"] .pagination .page-item.active .page-link {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
 [data-theme="mario"] .pagination .page-link {
     border: 2px solid var(--border-color);
     border-radius: 0;
     margin: 0 1px;
     background: var(--bg-card);
     font-weight: bold;
+    color: var(--text-primary);
+}
+
+[data-theme="mario"] .pagination .page-item.active .page-link {
+    background: var(--primary-color);
+    border-color: var(--text-primary);
+    color: #fff;
 }
 
 /* 模态框样式 */
@@ -331,6 +383,46 @@
 [data-theme="mario"] .alert {
     border: 3px solid var(--border-color);
     border-radius: 0;
+}
+
+/* 卡片头部 */
+[data-theme="modern"] .card-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+[data-theme="mario"] .card-header {
+    background: var(--secondary-color);
+    border-bottom: 2px solid var(--border-color);
+    font-weight: bold;
+}
+
+/* 表格行悬浮 */
+[data-theme="modern"] .table-hover > tbody > tr:hover > * {
+    --bs-table-accent-bg: rgba(99, 102, 241, 0.06);
+}
+
+[data-theme="mario"] .table-hover > tbody > tr:hover > * {
+    --bs-table-accent-bg: rgba(251, 208, 0, 0.25);
+}
+
+/* HTMX 请求中的加载反馈：发起元素降低透明度并禁用点击 */
+.htmx-request {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* 马里奥主题下的代码块：bg-light 与米色底不协调，统一为羊皮纸底色 */
+[data-theme="mario"] pre.bg-light {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary);
+}
+
+/* 等宽数字：统计数字、表格数值列对齐更整齐 */
+.card .fs-3, .card .fs-4 {
+    font-variant-numeric: tabular-nums;
 }
 
 /* 加载动画 */
@@ -477,6 +569,21 @@
     color: #1e40af;
 }
 
+.method-put {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.method-delete {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.method-patch {
+    background-color: #ede9fe;
+    color: #5b21b6;
+}
+
 [data-theme="mario"] .method-badge {
     border: 1px solid var(--border-color);
     border-radius: 0;
@@ -489,22 +596,83 @@
         padding: 6px 12px;
         font-size: 12px;
     }
-    
+
     .task-card {
         padding: 12px;
     }
-    
+
     .task-header {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .detail-item {
         flex-direction: column;
         gap: 4px;
     }
-    
+
     .detail-label {
         min-width: auto;
     }
+}
+
+/* ==================== Cron 表达式快速选择助手 ==================== */
+.cron-helper {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.cron-helper-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.cron-chip {
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.cron-chip:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.cron-chip.active {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.cron-helper-note {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+.cron-helper-note code {
+    color: var(--primary-color);
+    background: transparent;
+}
+
+/* 马里奥主题：像素风格适配 */
+[data-theme="mario"] .cron-helper {
+    border: 2px solid var(--border-color);
+    border-radius: 0;
+}
+
+[data-theme="mario"] .cron-chip {
+    border: 2px solid var(--border-color);
+    border-radius: 0;
+    font-weight: bold;
 }

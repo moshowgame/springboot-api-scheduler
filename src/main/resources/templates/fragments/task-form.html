@@ -38,13 +38,45 @@
                            th:value="${task?.url}" placeholder="https://example.com/api/health">
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-12" th:attr="x-data=|{ cron: '${task?.cronExpression ?: ''}' }|">
                     <label class="form-label">Cron 表达式</label>
-                    <input type="text" class="form-control" name="cronExpression"
-                           th:value="${task?.cronExpression}" placeholder="0 0/5 * * * ?">
-                    <div class="form-text">如 0 0/5 * * * ? 表示每 5 分钟执行一次</div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="cronExpression" x-model="cron"
+                               placeholder="0 0/5 * * * ?">
+                        <button type="button" class="btn btn-outline-secondary" @click="cron = ''">清除</button>
+                    </div>
+
+                    <!-- Cron 快速选择助手：点击常用表达式直接应用 -->
+                    <div class="cron-helper mt-2">
+                        <div class="cron-helper-title">⚡ 常用检测频率（点击快速应用）</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="cron-chip" @click="cron = '0 * * * * ?'"
+                                    :class="{active: cron === '0 * * * * ?'}">每分钟</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0/5 * * * ?'"
+                                    :class="{active: cron === '0 0/5 * * * ?'}">每 5 分钟</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0/30 * * * ?'"
+                                    :class="{active: cron === '0 0/30 * * * ?'}">每 30 分钟</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0 * * * ?'"
+                                    :class="{active: cron === '0 0 * * * ?'}">每小时</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0 0/6 * * ?'"
+                                    :class="{active: cron === '0 0 0/6 * * ?'}">每 6 小时</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0 8 * * ?'"
+                                    :class="{active: cron === '0 0 8 * * ?'}">每天 8 点</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0 8,12,20 * * ?'"
+                                    :class="{active: cron === '0 0 8,12,20 * * ?'}">每天 8/12/20 点</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0 9-18 ? * MON-FRI'"
+                                    :class="{active: cron === '0 0 9-18 ? * MON-FRI'}">工作日 9-18 点每小时</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0 9 ? * MON'"
+                                    :class="{active: cron === '0 0 9 ? * MON'}">每周一 9 点</button>
+                            <button type="button" class="cron-chip" @click="cron = '0 0 0 1 * ?'"
+                                    :class="{active: cron === '0 0 0 1 * ?'}">每月 1 号 0 点</button>
+                        </div>
+                        <div class="cron-helper-note small text-muted">
+                            6 位格式：<code>秒 分 时 日 月 周</code>，"日"与"周"不可同时指定，另一个用 <code>?</code> 占位；留空或格式非法时任务不会被定时调度，仍可手动执行。
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">描述</label>
                     <input type="text" class="form-control" name="description"
                            th:value="${task?.description}" placeholder="可选">

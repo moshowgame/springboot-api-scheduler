@@ -38,6 +38,8 @@ public class AssertionPageController {
         }
         model.addAttribute("tasks", tasks);
         model.addAttribute("selectedTaskId", taskId == null ? "" : taskId);
+        // 断言列表片段依据 taskId 决定是否渲染「配置断言 / 清空」按钮，需与 selectedTaskId 保持一致
+        model.addAttribute("taskId", taskId);
         model.addAttribute("assertions", taskId == null ? List.of() : apiAssertionService.findByTaskId(taskId));
         return "assertions";
     }

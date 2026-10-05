@@ -35,6 +35,10 @@ public class ApiTaskServiceImpl implements ApiTaskService {
     public int save(ApiTask apiTask) {
         apiTask.setId(UUID.randomUUID().toString());
         apiTask.setStatus("PAUSED");
+        // 警报开关默认关闭，避免 Boolean 为 null（数据库无默认值，页面按 null 判断会取反失败）
+        if (apiTask.getAlertEnabled() == null) {
+            apiTask.setAlertEnabled(false);
+        }
         return apiTaskMapper.insert(apiTask);
     }
 
