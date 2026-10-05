@@ -27,27 +27,44 @@
 
 ### 📷 系统截图
 登录<br>
-<img src="{DB200B31-9734-4C8D-B94B-F319AC77D6C1}.png" alt="登录" width="600"/><br>
-任务列表<br>
-<img src="{0CBBE51F-9282-42B8-8A02-2A33E3DB87DD}.png" alt="任务列表" width="600"/><br>
-日志<br>
-<img src="{68776847-753E-412B-B899-1DC7622D354E}.png" alt="日志" width="600"/><br>
-任务详情<br>
-<img src="{54583E38-DE3C-452A-BC5B-DEBDB2915411}.png" alt="任务详情" width="200"/><br>
-断言<br>
-<img src="{a7bb4bf8-99e7-4003-80ba-2a53194bcec0}.png" alt="断言" width="200"/><br>
-警报设置<br>
-<img src="{8a06159e-e0e6-4a5c-8011-82ee24f998ce}.png" alt="警报设置" width="200"/><br>
-警报记录<br>
-<img src="{c444212c-56ed-4328-b537-17e642aa7c96}.png" alt="主题切换" width="200"/><br>
-主题切换<br>
-<img src="{eb940c41-2aff-426c-b403-c4251e5f7dd3}.png" alt="数据统计" width="200"/><br>
+<img src=".review/login-modern.png" alt="登录" width="600"/><br>
 数据统计<br>
-<img src="theme_switcher.png" alt="主题切换" width="300"/><br>
+<img src=".review/dashboard-modern.png" alt="数据统计" width="600"/><br>
+任务列表<br>
+<img src=".review/tasks-modern.png" alt="任务列表" width="600"/><br>
+任务表单（含 Cron 常用表达式快速选择）<br>
+<img src=".review/task-form-cron-helper.png" alt="任务表单与 Cron 助手" width="600"/><br>
+日志<br>
+<img src=".review/logs-modern.png" alt="日志" width="600"/><br>
+断言<br>
+<img src=".review/assertions-modern.png" alt="断言" width="600"/><br>
+警报记录（右上角「警报配置」为警报设置入口）<br>
+<img src=".review/alerts-modern.png" alt="警报记录" width="600"/><br>
+主题切换（现代化 / 马里奥像素风）<br>
+<img src=".review/dashboard-modern.png" alt="现代化主题" width="300"/>
+<img src=".review/dashboard-mario.png" alt="马里奥主题" width="300"/><br>
 
-## 🏆Author作者
-Powered by Moshow郑锴 , Show more on CSDN https://zhengkai.blog.csdn.net/ | 公众号【软件开发大百科】
+## 👤 作者
 
+**Moshow 郑锴** —— 一名热爱技术与分享的 Technical Lead / 数据科学家 / SpringBoot 专家。
+
+[![CSDN](https://img.shields.io/badge/CSDN-博客之星2025年度TOP100-fc5531)](https://zhengkai.blog.csdn.net/)
+[![GitHub](https://img.shields.io/badge/GitHub-4K_Stars-181717?logo=github)](https://github.com/moshowgame)
+[![微信公众号](https://img.shields.io/badge/微信公众号-软件开发大百科-07c160)](https://zhengkai.blog.csdn.net/)
+
+<details open>
+<summary><b>🏅 权威认证</b></summary>
+
+| 领域 | 认证 |
+|---|---|
+| ☁️ 云计算 | GCA 谷歌云架构师认证 · 阿里云 ACP 认证 |
+| 🧠 数据与 AI | Neo4j 数据科学家认证 · 广东省人工智能训练师认证 |
+| 📋 项目管理 | PMP 项目管理认证 · CSPM 项目管理专业人员能力评价认证 |
+| 🏢 企业数字化 | 金蝶高级 CRM 供应链工程师认证 |
+
+</details>
+
+> 💡 更多技术分享：[CSDN 博客](https://zhengkai.blog.csdn.net/) · [GitHub @moshowgame](https://github.com/moshowgame) · 公众号【软件开发大百科】
 
 ---
 
