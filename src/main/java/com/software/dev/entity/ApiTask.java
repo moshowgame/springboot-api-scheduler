@@ -20,4 +20,15 @@ public class ApiTask {
     private LocalDateTime lastExecuteTime;
     private String assertions; // 断言配置JSON
     private Boolean alertEnabled; // 警报是否启用
+
+    /** 任务触发类型: CRON=定时调度（默认）/ CHAIN=被链式调用（不参与定时调度） */
+    private String triggerType;
+    /** 本任务执行完成后要触发的下游任务 id */
+    private String nextTaskId;
+    /** 触发下游任务的条件: ALWAYS=任意 / ASSERTION_PASS=断言成功 / ASSERTION_FAIL=断言失败 */
+    private String triggerCondition;
+
+    public boolean isChainTriggered() {
+        return "CHAIN".equals(triggerType);
+    }
 }

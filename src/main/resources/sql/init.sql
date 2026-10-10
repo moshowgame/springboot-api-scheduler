@@ -126,6 +126,9 @@ CREATE TABLE public.api_task (
 	last_execute_time timestamp NULL,
 	assertions text NULL,
 	alert_enabled bool DEFAULT false NULL,
+	trigger_type varchar(20) DEFAULT 'CRON'::character varying NOT NULL,
+	next_task_id varchar(50) NULL,
+	trigger_condition varchar(20) DEFAULT 'ALWAYS'::character varying NOT NULL,
 	CONSTRAINT api_task_pkey PRIMARY KEY (id)
 );
 

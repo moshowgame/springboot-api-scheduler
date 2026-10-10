@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 任务管理页面控制器
@@ -35,7 +37,7 @@ public class TaskPageController {
 
     @GetMapping("/tasks")
     public String page(Model model) {
-        model.addAttribute("tasks", apiTaskService.findAll());
+        fillTable(model, null, null);
         return "tasks";
     }
 
@@ -43,7 +45,7 @@ public class TaskPageController {
 
     @GetMapping("/web/tasks/list")
     public String list(Model model) {
-        model.addAttribute("tasks", apiTaskService.findAll());
+        fillTable(model, null, null);
         return "fragments/task-list :: table";
     }
 
@@ -53,15 +55,33 @@ public class TaskPageController {
         ApiTask task = new ApiTask();
         task.setMethod("GET");
         task.setTimeout(30);
-        model.addAttribute("task", task);
+        task.setTriggerType("CRON");
+        task.setTriggerCondition("ALWAYS");
+        fillFormOptions(model, task);
         return "fragments/task-form :: modalContent";
     }
 
     /** 编辑任务表单 */
     @GetMapping("/web/tasks/{id}/edit")
     public String editForm(@PathVariable String id, Model model) {
-        model.addAttribute("task", apiTaskService.findById(id));
+        ApiTask task = apiTaskService.findById(id);
+        if (task.getTriggerType() == null) {
+            task.setTriggerType("CRON");
+        }
+        if (task.getTriggerCondition() == null) {
+            task.setTriggerCondition("ALWAYS");
+        }
+        model.addAttribute("task", task);
+        fillFormOptions(model, task);
         return "fragments/task-form :: modalContent";
+    }
+
+    /** 表单公共选项：触发类型默认值、可选择的下游任务（仅被链式调用类型，排除自身） */
+    private void fillFormOptions(Model model, ApiTask task) {
+        List<ApiTask> chainTargets = apiTaskService.findAll().stream()
+                .filter(t -> t.isChainTriggered() && !t.getId().equals(task.getId()))
+                .toList();
+        model.addAttribute("chainTargets", chainTargets);
     }
 
     /** 保存（新建或更新） */
@@ -86,6 +106,18 @@ public class TaskPageController {
         task.setParameters(form.getParameters());
         task.setCronExpression(form.getCronExpression());
         task.setDescription(form.getDescription());
+        // 触发类型互斥：CRON=定时调度 / CHAIN=被链式调用（后者无 Cron 调度）
+        String triggerType = "CHAIN".equals(form.getTriggerType()) ? "CHAIN" : "CRON";
+        task.setTriggerType(triggerType);
+        // 下游触发配置：未选下游任务时条件置为 ALWAYS（列 NOT NULL，保持默认语义）
+        String nextTaskId = (form.getNextTaskId() == null || form.getNextTaskId().isEmpty()
+                || form.getNextTaskId().equals(task.getId())) ? null : form.getNextTaskId();
+        task.setNextTaskId(nextTaskId);
+        task.setTriggerCondition(nextTaskId == null ? "ALWAYS"
+                : switch (form.getTriggerCondition() == null ? "" : form.getTriggerCondition()) {
+                    case "ASSERTION_PASS", "ASSERTION_FAIL" -> form.getTriggerCondition();
+                    default -> "ALWAYS";
+                });
 
         if (isNew) {
             apiTaskService.save(task);
@@ -149,9 +181,20 @@ public class TaskPageController {
     }
 
     private String renderTable(Model model, String message) {
-        model.addAttribute("tasks", apiTaskService.findAll());
-        model.addAttribute("message", message);
-        model.addAttribute("closeModal", true);
+        return fillTable(model, message, true);
+    }
+
+    /** 组装任务表格片段数据：任务列表 + 下游任务名映射（用于链式触发展示） */
+    private String fillTable(Model model, String message, Boolean closeModal) {
+        List<ApiTask> tasks = apiTaskService.findAll();
+        Map<String, String> taskNameById = tasks.stream()
+                .collect(Collectors.toMap(ApiTask::getId, t -> t.getTaskName() == null ? t.getId() : t.getTaskName(), (a, b) -> a));
+        model.addAttribute("tasks", tasks);
+        model.addAttribute("taskNameById", taskNameById);
+        if (message != null) {
+            model.addAttribute("message", message);
+            model.addAttribute("closeModal", closeModal);
+        }
         return "fragments/task-list :: table";
     }
 }

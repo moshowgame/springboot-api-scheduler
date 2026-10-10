@@ -616,6 +616,53 @@
     }
 }
 
+/* ==================== 任务链（简易编排） ==================== */
+.chain-flow {
+    display: flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chain-step {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chain-edge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.chain-arrow {
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--text-muted);
+}
+
+.chain-node {
+    min-width: 200px;
+    max-width: 320px;
+    padding: 10px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.chain-node-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+[data-theme="mario"] .chain-node {
+    border: 2px solid var(--border-color);
+    border-radius: 0;
+}
+
 /* ==================== Cron 表达式快速选择助手 ==================== */
 .cron-helper {
     background: var(--bg-secondary);

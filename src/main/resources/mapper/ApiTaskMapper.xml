@@ -18,6 +18,9 @@
         <result property="lastExecuteTime" column="last_execute_time"/>
         <result property="assertions" column="assertions"/>
         <result property="alertEnabled" column="alert_enabled"/>
+        <result property="triggerType" column="trigger_type"/>
+        <result property="nextTaskId" column="next_task_id"/>
+        <result property="triggerCondition" column="trigger_condition"/>
     </resultMap>
 
     <select id="findAll" resultMap="ApiTaskResult">
@@ -37,24 +40,27 @@
     </select>
 
     <insert id="insert" parameterType="com.software.dev.entity.ApiTask">
-        INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time, assertions, alert_enabled)
-        VALUES (#{id}, #{taskName}, #{url}, #{method}, #{timeout}, #{headers}, #{parameters}, #{cronExpression}, #{status}, #{description}, NOW(), NOW(), #{assertions}, #{alertEnabled})
+        INSERT INTO api_task (id, task_name, url, method, timeout, headers, parameters, cron_expression, status, description, create_time, update_time, assertions, alert_enabled, trigger_type, next_task_id, trigger_condition)
+        VALUES (#{id}, #{taskName}, #{url}, #{method}, #{timeout}, #{headers}, #{parameters}, #{cronExpression}, #{status}, #{description}, NOW(), NOW(), #{assertions}, #{alertEnabled}, #{triggerType}, #{nextTaskId}, #{triggerCondition})
     </insert>
 
     <update id="update" parameterType="com.software.dev.entity.ApiTask">
-        UPDATE api_task 
-        SET task_name = #{taskName}, 
-            url = #{url}, 
-            method = #{method}, 
-            timeout = #{timeout}, 
-            headers = #{headers}, 
-            parameters = #{parameters}, 
-            cron_expression = #{cronExpression}, 
-            status = #{status}, 
-            description = #{description}, 
+        UPDATE api_task
+        SET task_name = #{taskName},
+            url = #{url},
+            method = #{method},
+            timeout = #{timeout},
+            headers = #{headers},
+            parameters = #{parameters},
+            cron_expression = #{cronExpression},
+            status = #{status},
+            description = #{description},
             update_time = NOW(),
             assertions = #{assertions},
-            alert_enabled = #{alertEnabled}
+            alert_enabled = #{alertEnabled},
+            trigger_type = #{triggerType},
+            next_task_id = #{nextTaskId},
+            trigger_condition = #{triggerCondition}
         WHERE id = #{id}
     </update>
 

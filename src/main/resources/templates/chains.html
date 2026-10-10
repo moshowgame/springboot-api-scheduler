@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" data-theme="modern">
+<head th:replace="~{layout :: head('任务链')}"></head>
+<body>
+<nav th:replace="~{layout :: navbar('chains')}"></nav>
+
+<main class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h4 class="mb-0">🔗 任务链</h4>
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/chains}">刷新</a>
+    </div>
+
+    <div class="alert alert-info py-2 small">
+        链式编排说明：在任务表单中将「触发类型」设为 <b>⛓️ 被链式调用</b>（不参与定时调度），再在上游任务的「完成后触发」中选择该任务并指定条件（任意 / 断言成功 / 断言失败）。链路成环时运行时会自动跳过触发。
+    </div>
+
+    <!-- 任务链路 -->
+    <div class="row g-3" th:if="${!#lists.isEmpty(chains)}">
+        <div class="col-12" th:each="chain, cs : ${chains}">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span th:text="'链路 ' + ${cs.count}">链路 1</span>
+                    <span class="badge bg-danger" th:if="${chain.cycle}">⚠️ 检测到成环，已截断展示</span>
+                </div>
+                <div class="card-body">
+                    <div class="chain-flow">
+                        <!-- 每次迭代输出一组：箭头(条件) + 节点 -->
+                        <div class="chain-step" th:each="node, ns : ${chain.nodes}">
+                            <div class="chain-edge" th:if="${ns.count > 1}">
+                                <span class="chain-arrow">→</span>
+                                <span class="badge"
+                                      th:classappend="${node.condition == 'ASSERTION_PASS'} ? 'bg-success'
+                                            : (${node.condition == 'ASSERTION_FAIL'} ? 'bg-danger' : 'bg-secondary')"
+                                      th:text="${node.condition == 'ASSERTION_PASS'} ? '断言成功'
+                                            : (${node.condition == 'ASSERTION_FAIL'} ? '断言失败' : '任意')">条件</span>
+                            </div>
+                            <div class="chain-node">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span class="chain-node-name" th:text="${node.task.taskName}">任务名</span>
+                                    <span class="badge bg-info text-dark" th:if="${node.task.triggerType == 'CHAIN'}">⛓️ 链式</span>
+                                    <span class="badge bg-secondary" th:if="${node.task.triggerType != 'CHAIN'}">⏰ 定时</span>
+                                </div>
+                                <div class="text-muted small text-break" th:text="${node.task.url}">url</div>
+                                <div class="small mt-1" th:if="${node.last != null}">
+                                    <span class="text-muted" th:text="${#temporals.format(node.last.executeTime, 'MM-dd HH:mm:ss')}">时间</span>
+                                    <span class="badge"
+                                          th:classappend="${node.last.status == 'SUCCESS' and !(node.last.allAssertionsPassed == false)} ? 'bg-success' : 'bg-danger'"
+                                          th:text="${node.last.status == 'SUCCESS'} ? (${node.last.allAssertionsPassed != null} ? (${node.last.allAssertionsPassed} ? '断言通过' : '断言失败') : '成功') : '执行失败'">结果</span>
+                                </div>
+                                <div class="small text-muted mt-1" th:if="${node.last == null}">暂无执行记录</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游离的链式任务 -->
+    <div class="card mt-3" th:if="${!#lists.isEmpty(orphans)}">
+        <div class="card-header">⛓️ 游离的链式任务（未被任何上游引用）</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>任务</th>
+                    <th style="width: 200px;">最近执行</th>
+                    <th style="width: 220px;">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${orphans}">
+                    <td>
+                        <div class="task-name" th:text="${o.task.taskName}">任务名</div>
+                        <div class="text-muted small text-break" th:text="${o.task.url}">url</div>
+                    </td>
+                    <td class="small" th:if="${o.last != null}">
+                        <span class="text-muted" th:text="${#temporals.format(o.last.executeTime, 'yyyy-MM-dd HH:mm:ss')}">-</span>
+                        <span class="badge" th:classappend="${o.last.status == 'SUCCESS'} ? 'bg-success' : 'bg-danger'"
+                              th:text="${o.last.status == 'SUCCESS'} ? '成功' : '失败'">结果</span>
+                    </td>
+                    <td class="small text-muted" th:if="${o.last == null}">暂无执行记录</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/tasks}">去接入链路</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 空态 -->
+    <div class="card" th:if="${#lists.isEmpty(chains) and #lists.isEmpty(orphans)}">
+        <div class="card-body text-center text-muted py-5">
+            <div class="fs-4 mb-2">🔗</div>
+            还没有任务链。在任务管理中编辑任务，将某个任务的触发类型设为「被链式调用」，并在上游任务的「完成后触发」中选择它即可建立链路。
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{layout :: scripts}"></div>
+</body>
+</html>

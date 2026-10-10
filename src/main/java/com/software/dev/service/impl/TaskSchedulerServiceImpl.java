@@ -95,10 +95,15 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
 
     @Override
     public void scheduleTask(ApiTask task) {
+        // 触发类型互斥：被链式调用的任务不参与 Cron 调度，仅由上游任务触发或手动执行
+        if (task.isChainTriggered()) {
+            log.info("Task {} is CHAIN triggered, skip cron scheduling", task.getTaskName());
+            return;
+        }
         try {
             CronTrigger cronTrigger = new CronTrigger(task.getCronExpression());
             ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(
-                () -> executeTask(task), 
+                () -> executeTask(task),
                 cronTrigger
             );
             scheduledTasks.put(task.getId(), scheduledFuture);
@@ -163,8 +168,17 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
     }
 
     private void executeTask(ApiTask task) {
+        executeTask(task, new java.util.LinkedHashSet<>());
+    }
+
+    /**
+     * 执行任务。
+     * @param chain 当前链式调用栈中已执行过的任务 id，用于防止任务链成环（A→B→A）导致无限递归
+     */
+    private void executeTask(ApiTask task, java.util.Set<String> chain) {
         log.info("Executing task: {}", task.getTaskName());
-        
+        chain.add(task.getId());
+
         ApiResponse response = new ApiResponse();
         response.setTaskId(task.getId());
         response.setRequestUrl(task.getUrl());
@@ -280,7 +294,52 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
         }
         
         apiResponseService.save(response);
-        log.info("Task execution completed: {} - Status: {} - Assertions: {}", 
+        log.info("Task execution completed: {} - Status: {} - Assertions: {}",
             task.getTaskName(), response.getStatus(), response.getAssertionResult());
+
+        triggerNextTask(task, response, chain);
+    }
+
+    /**
+     * 链式触发：按本任务配置的条件判断是否触发下游任务。
+     * 条件语义：
+     *  - ALWAYS: HTTP 调用完成即触发（无论成败）
+     *  - ASSERTION_PASS: 执行成功（SUCCESS）且断言全部通过（未配置断言视为通过）
+     *  - ASSERTION_FAIL: 断言未全部通过（含断言执行异常；未配置断言时永不触发）
+     */
+    private void triggerNextTask(ApiTask task, ApiResponse response, java.util.Set<String> chain) {
+        String nextTaskId = task.getNextTaskId();
+        if (nextTaskId == null || nextTaskId.isEmpty()) {
+            return;
+        }
+        boolean pass = !"ERROR".equals(response.getStatus())
+                && !Boolean.FALSE.equals(response.getAllAssertionsPassed());
+        boolean fail = Boolean.FALSE.equals(response.getAllAssertionsPassed());
+
+        String condition = task.getTriggerCondition() == null ? "ALWAYS" : task.getTriggerCondition();
+        boolean shouldTrigger = switch (condition) {
+            case "ASSERTION_PASS" -> pass;
+            case "ASSERTION_FAIL" -> fail;
+            default -> true;
+        };
+        if (!shouldTrigger) {
+            log.info("任务链条件未满足，跳过触发下游 - 任务: {}, 条件: {}", task.getTaskName(), condition);
+            return;
+        }
+
+        ApiTask next = apiTaskMapper.findById(nextTaskId);
+        if (next == null) {
+            log.warn("下游任务不存在，链式触发中止 - 任务: {}, nextTaskId: {}", task.getTaskName(), nextTaskId);
+            return;
+        }
+        if (chain.contains(nextTaskId)) {
+            log.warn("检测到任务链成环（{} -> {}），跳过触发以防止无限循环", task.getTaskName(), next.getTaskName());
+            return;
+        }
+
+        log.info("链式触发下游任务: {} -[{}]-> {}", task.getTaskName(), condition, next.getTaskName());
+        // 拷贝链路集合后异步执行，避免并发修改
+        java.util.Set<String> nextChain = new java.util.LinkedHashSet<>(chain);
+        taskScheduler.schedule(() -> executeTask(next, nextChain), java.time.Instant.now());
     }
 }
