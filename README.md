@@ -32,8 +32,14 @@
 <img src=".review/dashboard-modern.png" alt="数据统计" width="600"/><br>
 任务列表<br>
 <img src=".review/tasks-modern.png" alt="任务列表" width="600"/><br>
+任务列表（任务编排：⛓️ 被链式调用 / ↳ 下游任务标识）<br>
+<img src=".review/tasks-chain.png" alt="任务列表任务编排标识" width="600"/><br>
 任务表单（含 Cron 常用表达式快速选择）<br>
 <img src=".review/task-form-cron-helper.png" alt="任务表单与 Cron 助手" width="600"/><br>
+任务表单（触发类型 + 完成后触发，简易任务编排）<br>
+<img src=".review/task-form-chain-trigger.png" alt="任务表单与任务编排配置" width="600"/><br>
+任务链总览（链式触发条件与节点最近执行结果）<br>
+<img src=".review/chains-page.png" alt="任务链" width="600"/><br>
 日志<br>
 <img src=".review/logs-modern.png" alt="日志" width="600"/><br>
 断言<br>
@@ -410,7 +416,7 @@ mybatis:
 
 | 日期         | 更新内容                                                                                                            |
 |------------|-----------------------------------------------------------------------------------------------------------------|
-| 2026-10-10 | ✅ 新增简易任务编排：触发类型（定时调度/被链式调用）、完成后按条件（任意/断言成功/断言失败）链式触发下游任务、任务链可视化页面 /chains |
+| 2026-10-10 | ✅ 新增简易任务编排：触发类型（定时调度/被链式调用）、完成后按条件（任意/断言成功/断言失败）链式触发下游任务、任务链可视化页面 /chains ✅ 新增版本化增量 DDL 管理与执行时间记录 [SQL_INCREMENTAL_GUIDE.md](SQL_INCREMENTAL_GUIDE.md) |
 | 2026-10-05 | ✅ 前端改造为 Thymeleaf + HTMX + Alpine.js 多页应用 [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) ✅ 任务表单新增 Cron 常用表达式快速选择助手 ✅ 修复新建任务后任务页 500 等问题 |
 | 2026-05-03 | ✅ 新增数据统计功能，支持多维度数据分析与可视化图表展示 |
 | 2026-02-20 | ✅ 新增双主题切换功能（现代化/马里奥像素风）✅ 任务列表卡片式布局优化|
