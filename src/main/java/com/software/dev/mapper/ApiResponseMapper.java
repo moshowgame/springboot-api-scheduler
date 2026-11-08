@@ -27,4 +27,7 @@ public interface ApiResponseMapper {
 
     int count();
 
+    // 删除指定时间之前的响应记录（定时清理用）
+    int deleteBeforeTime(@Param("time") LocalDateTime time);
+
 }

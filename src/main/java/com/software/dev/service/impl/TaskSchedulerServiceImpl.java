@@ -208,16 +208,29 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
             
             Request.Builder requestBuilder = new Request.Builder().url(requestUrl);
             
-            // Set method
-            switch (task.getMethod().toUpperCase()) {
+            // Set method：请求体统一取 parameters 字段（JSON），与任务表单提供的 GET/POST/PUT/DELETE/PATCH 对齐
+            String method = task.getMethod().toUpperCase();
+            String requestBody = task.getParameters();
+            MediaType jsonType = MediaType.parse("application/json; charset=utf-8");
+            switch (method) {
                 case "GET":
                     requestBuilder.get();
                     break;
+                case "HEAD":
+                    requestBuilder.head();
+                    break;
+                case "DELETE":
+                    // DELETE 允许携带请求体（部分接口需要），为空时发标准无体 DELETE
+                    if (requestBody != null && !requestBody.isEmpty()) {
+                        requestBuilder.method("DELETE", RequestBody.create(requestBody, jsonType));
+                    } else {
+                        requestBuilder.delete();
+                    }
+                    break;
                 case "POST":
-                    // POST请求使用请求体
-                    String postBody = task.getParameters();
-                    RequestBody body = RequestBody.create(postBody != null ? postBody : "", MediaType.parse("application/json; charset=utf-8"));
-                    requestBuilder.post(body);
+                case "PUT":
+                case "PATCH":
+                    requestBuilder.method(method, RequestBody.create(requestBody != null ? requestBody : "", jsonType));
                     break;
                 default:
                     throw new IllegalArgumentException("Unsupported HTTP method: " + task.getMethod());
@@ -235,12 +248,16 @@ public class TaskSchedulerServiceImpl implements TaskSchedulerService {
                 }
             }
             
-            // Set timeout
+            // Set timeout：任务超时单位为毫秒。callTimeout 覆盖整个调用周期（DNS+连接+写入+读取），
+            // 通过 newBuilder() 派生一次性 client，与原 client 共享连接池和线程池，开销可忽略
             int timeout = task.getTimeout() != null ? task.getTimeout() : 30000;
-            
+            OkHttpClient callClient = httpClient.newBuilder()
+                    .callTimeout(timeout, java.util.concurrent.TimeUnit.MILLISECONDS)
+                    .build();
+
             Request request = requestBuilder.build();
-            
-            try (Response httpResponse = httpClient.newCall(request).execute()) {
+
+            try (Response httpResponse = callClient.newCall(request).execute()) {
                 long endTime = System.currentTimeMillis();
                 response.setResponseTime(endTime - startTime);
                 response.setResponseCode(httpResponse.code());

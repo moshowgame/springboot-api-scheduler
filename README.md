@@ -16,7 +16,7 @@
 ### 🎯 核心优势
 
 - **📦 轻量级**: 无需复杂配置，一个SpringBoot应用搞定
-- **⚡ 高性能**: 基于OkHttp3，支持连接池、超时控制
+- **⚡ 高性能**: 基于OkHttp3，支持连接池与全链路超时控制（DNS/连接/写入/读取）
 - **🎨 双主题UI**: 现代化风格与马里奥像素风自由切换
 - **🔧 易维护**: 标准SpringBoot架构，代码清晰易懂
 - **📊 完整日志**: 详细的请求响应记录，便于问题排查
@@ -96,7 +96,8 @@
 
 ### 🎯 任务管理
 - ✅ **动态任务管理** - 随时添加/修改/删除API任务
-- ✅ **HTTP方法支持** - GET/POST请求全覆盖
+- ✅ **HTTP方法支持** - GET/POST/PUT/DELETE/PATCH 全覆盖，后端另兼容 HEAD
+- ✅ **请求体统一** - 非 GET 请求以 Parameters（JSON）作为请求体，DELETE 可选携带请求体
 - ✅ **自定义配置** - Headers、Parameters完全可控
 - ✅ **智能调度** - Cron表达式定时调度，内置丰富模板
 - ✅ **实时控制** - 启动/暂停/立即执行，一键操作
@@ -106,6 +107,7 @@
 - ✅ **响应详情** - HTTP状态码、响应体、响应时间精确统计
 - ✅ **错误追踪** - 异常信息详细记录，便于问题定位
 - ✅ **历史查询** - 支持分页查询，历史记录一目了然
+- ✅ **自动清理** - 响应日志默认保留 30 天，每天凌晨 2 点自动清理过期记录
 
 ### ✅ 断言验证 (Assertion)
 - ✅ **多种断言类型** - 支持HTTP状态码、JSON包含关键字、JSON路径等多种断言方式
@@ -378,6 +380,24 @@ mybatis:
 - 日志文件按日期滚动存储
 - 可配置日志级别和格式
 
+### ⏱ 任务执行行为 (TaskSchedulerServiceImpl)
+
+| 项目 | 说明 |
+|---|---|
+| 支持方法 | `GET` / `HEAD` / `POST` / `PUT` / `DELETE` / `PATCH`；任务表单提供 GET、POST、PUT、DELETE、PATCH，HEAD 可通过 API 直接配置 |
+| 参数与请求体 | `GET`：`parameters`（JSON）自动转换为 URL 查询参数；`POST` / `PUT` / `PATCH`：`parameters` 原样作为 JSON 请求体（`Content-Type: application/json; charset=utf-8`）；`DELETE`：`parameters` 非空时携带 JSON 请求体，为空时发送无请求体 DELETE |
+| 超时 | `timeout` 字段按**毫秒**解释，默认 `30000`；执行时通过 `OkHttpClient.callTimeout` 覆盖整个调用周期（DNS 解析 + 连接 + 写入 + 读取），并从共享连接池的 client 派生，开销可忽略 |
+| 失败处理 | 不支持的方法抛 `IllegalArgumentException`；网络/超时异常记录到响应日志的 `error_message`，不中断后续调度 |
+
+### 🗂 数据保留策略
+
+| 数据 | 保留时长 | 清理方式 |
+|---|---|---|
+| 响应日志（`api_response`） | 30 天 | 每天 02:00 定时任务按 `execute_time` 删除过期记录（`ApiResponseServiceImpl#cleanExpiredResponses`） |
+| 警报记录（`alert_record`） | 30 天 | 每天 02:00 定时任务自动清理（与响应日志保持一致） |
+
+> 清理任务执行失败只记录错误日志，不影响调度与页面查询；如需调整保留时长，修改对应 `@Scheduled` 方法中的 `minusDays(30)` 即可。
+
 ---
 
 ## 🎯 使用场景
@@ -416,6 +436,7 @@ mybatis:
 
 | 日期         | 更新内容                                                                                                            |
 |------------|-----------------------------------------------------------------------------------------------------------------|
+| 2026-11-08 | ✅ 请求方法扩展为 GET/HEAD/POST/PUT/DELETE/PATCH，非 GET 请求体统一取 `parameters`（DELETE 可选带体）✅ 超时改用 OkHttp `callTimeout` 按毫秒覆盖全链路 ✅ `api_response` 响应日志新增 30 天自动清理（每天 02:00） |
 | 2026-10-10 | ✅ 新增简易任务编排：触发类型（定时调度/被链式调用）、完成后按条件（任意/断言成功/断言失败）链式触发下游任务、任务链可视化页面 /chains ✅ 新增版本化增量 DDL 管理与执行时间记录 [SQL_INCREMENTAL_GUIDE.md](SQL_INCREMENTAL_GUIDE.md) |
 | 2026-10-05 | ✅ 前端改造为 Thymeleaf + HTMX + Alpine.js 多页应用 [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md) ✅ 任务表单新增 Cron 常用表达式快速选择助手 ✅ 修复新建任务后任务页 500 等问题 |
 | 2026-05-03 | ✅ 新增数据统计功能，支持多维度数据分析与可视化图表展示 |

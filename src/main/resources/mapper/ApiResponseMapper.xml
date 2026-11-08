@@ -102,10 +102,14 @@
     </insert>
     
     <select id="selectByTaskIdAndTimeRange" resultMap="ApiResponseResult">
-        SELECT * FROM api_response 
-        WHERE task_id = #{taskId} 
+        SELECT * FROM api_response
+        WHERE task_id = #{taskId}
           AND execute_time BETWEEN #{startTime} AND #{endTime}
         ORDER BY execute_time DESC
     </select>
+
+    <delete id="deleteBeforeTime">
+        DELETE FROM api_response WHERE execute_time &lt; #{time}
+    </delete>
 
 </mapper>
